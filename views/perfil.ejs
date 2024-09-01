@@ -8,8 +8,13 @@
 <body>
     <h1>User Profile</h1>
     <p>Username: <%= user.username %></p>
-    <p>Email: <%= user.email %></p>
+    <p>Description: <%= user.description %></p>
+    <p>Twitter: <%= user.socialLinks.twitter %></p>
+    <p>Facebook: <%= user.socialLinks.facebook %></p>
+    <p>Instagram: <%= user.socialLinks.instagram %></p>
+    <p>Profile Visits: <%= user.visits %></p>
     <a href="/">Back to Home</a>
+    <a href="/ajustes">Settings</a>
     <a href="/logout">Logout</a>
 </body>
 </html>

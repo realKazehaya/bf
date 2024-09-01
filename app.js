@@ -2,10 +2,33 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const { Strategy } = require('passport-discord');
+const fs = require('fs-extra');
+const path = require('path');
 const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const DATA_FILE = path.join(__dirname, 'data', 'users.json');
+
+// Load user data
+async function loadUserData() {
+  try {
+    const data = await fs.readJSON(DATA_FILE);
+    return data;
+  } catch (err) {
+    return {};
+  }
+}
+
+// Save user data
+async function saveUserData(users) {
+  try {
+    await fs.writeJSON(DATA_FILE, users);
+  } catch (err) {
+    console.error('Error saving user data:', err);
+  }
+}
 
 // Configure session
 app.use(session({
@@ -24,17 +47,59 @@ passport.use(new Strategy({
   clientSecret: process.env.DISCORD_CLIENT_SECRET,
   callbackURL: `${process.env.BASE_URL}/discord/callback`,
   scope: ['identify', 'email']
-}, (accessToken, refreshToken, profile, done) => {
-  return done(null, profile);
+}, async (accessToken, refreshToken, profile, done) => {
+  const users = await loadUserData();
+  let user = users[profile.id];
+  if (!user) {
+    user = {
+      discordId: profile.id,
+      username: profile.username,
+      email: profile.email,
+      visits: 0,
+      description: '',
+      socialLinks: {
+        twitter: '',
+        facebook: '',
+        instagram: ''
+      }
+    };
+    users[profile.id] = user;
+    await saveUserData(users);
+  }
+  return done(null, user);
 }));
 
 passport.serializeUser((user, done) => {
+  done(null, user.discordId);
+});
+
+passport.deserializeUser(async (id, done) => {
+  const users = await loadUserData();
+  const user = users[id];
   done(null, user);
 });
 
-passport.deserializeUser((obj, done) => {
-  done(null, obj);
-});
+// Middleware to count profile visits
+async function countProfileVisits(req, res, next) {
+  if (req.isAuthenticated()) {
+    const users = await loadUserData();
+    const user = users[req.user.discordId];
+    if (user) {
+      user.visits += 1;
+      await saveUserData(users);
+    }
+  }
+  next();
+}
+
+// Middleware to send Discord notifications
+async function sendDiscordNotification(message) {
+  try {
+    await axios.post(DISCORD_WEBHOOK_URL, { content: message });
+  } catch (error) {
+    console.error('Error sending Discord notification:', error);
+  }
+}
 
 // Routes
 app.get('/', (req, res) => {
@@ -45,11 +110,40 @@ app.get('/', (req, res) => {
   }
 });
 
-app.get('/perfil', (req, res) => {
+app.get('/perfil', countProfileVisits, async (req, res) => {
   if (!req.isAuthenticated()) {
     res.redirect('/login');
   } else {
     res.render('perfil', { user: req.user });
+  }
+});
+
+app.get('/ajustes', (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+  } else {
+    res.render('ajustes', { user: req.user });
+  }
+});
+
+app.post('/ajustes', express.urlencoded({ extended: true }), async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+  } else {
+    const { description, twitter, facebook, instagram } = req.body;
+    const users = await loadUserData();
+    const user = users[req.user.discordId];
+    if (user) {
+      user.description = description;
+      user.socialLinks.twitter = twitter;
+      user.socialLinks.facebook = facebook;
+      user.socialLinks.instagram = instagram;
+      await saveUserData(users);
+
+      // Notify Discord channel
+      await sendDiscordNotification(`User ${user.username} updated their profile settings.`);
+    }
+    res.redirect('/ajustes');
   }
 });
 

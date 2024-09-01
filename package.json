@@ -1,18 +1,28 @@
 {
-    "name": "discord-biolink",
+    "name": "biolink-app",
     "version": "1.0.0",
-    "description": "A simple biolink app with Discord OAuth2 authentication",
+    "description": "Biolink app with Discord OAuth2 authentication",
     "main": "app.js",
     "scripts": {
-      "start": "node app.js"
+      "start": "node app.js",
+      "dev": "nodemon app.js"
     },
     "dependencies": {
-      "express": "^4.17.3",
-      "passport": "^0.5.1",
-      "passport-discord": "^0.1.0",
-      "ejs": "^3.1.8",
-      "express-session": "^1.17.1",
-      "axios": "^0.21.1"
-    }
+      "axios": "^1.3.3",
+      "ejs": "^3.1.9",
+      "express": "^4.18.2",
+      "express-session": "^1.17.3",
+      "passport": "^0.6.0",
+      "passport-discord": "^0.3.0",
+      "fs-extra": "^11.1.1"
+    },
+    "devDependencies": {
+      "nodemon": "^2.0.22"
+    },
+    "engines": {
+      "node": ">=14.x"
+    },
+    "author": "",
+    "license": "MIT"
   }
   
