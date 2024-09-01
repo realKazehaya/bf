@@ -10,7 +10,7 @@ app.secret_key = os.getenv('SECRET_KEY', 'mysecret')  # Usa una clave secreta se
 discord_bp = make_discord_blueprint(
     client_id=os.getenv('DISCORD_CLIENT_ID'),
     client_secret=os.getenv('DISCORD_CLIENT_SECRET'),
-    redirect_to='profile'  # Esta ruta debe coincidir con la configuración de redirección
+    redirect_to='profile'  # La función 'profile' manejará la URI de redirección
 )
 app.register_blueprint(discord_bp, url_prefix='/discord_login')
 
