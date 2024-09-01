@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export FLASK_APP=app.py
-export FLASK_ENV=production
+# Activate the virtual environment
+source .venv/bin/activate
 
-exec gunicorn -b 0.0.0.0:5000 app:app
+# Run the Flask app using gunicorn
+exec gunicorn --bind 0.0.0.0:$PORT app:app
