@@ -1,6 +1,5 @@
 from flask import Flask, redirect, url_for, session, render_template
 from flask_dance.contrib.discord import make_discord_blueprint, discord
-from flask_dance.consumer import OAuth2ConsumerBlueprint
 import os
 from dotenv import load_dotenv
 
@@ -14,7 +13,7 @@ app.config['SESSION_COOKIE_NAME'] = 'biolink_session'
 discord_bp = make_discord_blueprint(
     client_id=os.getenv('DISCORD_CLIENT_ID'),
     client_secret=os.getenv('DISCORD_CLIENT_SECRET'),
-    redirect_to='discord_login',
+    redirect_to='home',  # Redirige al home después de la autenticación
     scope=['identify', 'email']
 )
 app.register_blueprint(discord_bp, url_prefix='/discord_login')
@@ -39,8 +38,8 @@ def perfil():
 
 @app.route('/logout')
 def logout():
-    token = discord.token['access_token']
-    discord.session.delete('/api/v6/oauth2/token', headers={'Authorization': f'Bearer {token}'})
+    # Cierra sesión usando el blueprint de Discord
+    discord.logout()
     session.clear()
     return redirect(url_for('home'))
 
