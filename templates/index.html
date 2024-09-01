@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biolink</title>
+    <title>Biolink - Home</title>
 </head>
 <body>
-    <h1>Welcome, {{ user['username'] }}</h1>
-    <a href="{{ url_for('perfil') }}">Perfil</a>
+    <h1>Welcome, {{ user['username'] }}!</h1>
+    <a href="{{ url_for('perfil') }}">View Profile</a>
     <a href="{{ url_for('logout') }}">Logout</a>
 </body>
 </html>
