@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session, request, render_template
+from flask import Flask, redirect, url_for, request, render_template
 import requests
 from flask_dance.contrib.discord import make_discord_blueprint, discord
 import os
@@ -31,18 +31,28 @@ def profile():
     if not discord.authorized:
         return redirect(url_for('discord.login'))
     
-    user_info = discord.get('/users/@me')
-    user_info.raise_for_status()
-    user = user_info.json()
-    
-    # Enviar información a Discord
-    data = {
-        'content': f'Inicio de sesión: Usuario {user["username"]} ({user["id"]})',
-        'username': 'BiolinkBot'
-    }
-    requests.post(DISCORD_WEBHOOK_URL, json=data)
-    
-    return render_template('perfil.html', user=user)
+    try:
+        user_info = discord.get('/users/@me')
+        user_info.raise_for_status()  # Verifica si la solicitud a la API fue exitosa
+        user = user_info.json()
+        
+        # Enviar información a Discord
+        data = {
+            'content': f'Inicio de sesión: Usuario {user["username"]} ({user["id"]})',
+            'username': 'BiolinkBot'
+        }
+        response = requests.post(DISCORD_WEBHOOK_URL, json=data)
+        response.raise_for_status()  # Verifica si la solicitud al webhook fue exitosa
+        
+        return render_template('perfil.html', user=user)
+    except requests.exceptions.RequestException as e:
+        # Manejar errores de red o HTTP
+        print(f"Error al enviar mensaje al webhook o al obtener información del usuario: {e}")
+        return "Ocurrió un error al procesar tu solicitud", 500
+    except Exception as e:
+        # Manejar otros errores
+        print(f"Error interno: {e}")
+        return "Ocurrió un error interno en el servidor", 500
 
 @app.route('/logout')
 def logout():
@@ -50,4 +60,4 @@ def logout():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)

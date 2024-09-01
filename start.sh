@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# Establece el entorno
 export FLASK_APP=app.py
 export FLASK_ENV=production
 
-# Ejecuta la aplicación Flask
-exec python -m flask run --host=0.0.0.0 --port=${PORT:-5000}
+exec gunicorn -b 0.0.0.0:5000 app:app
