@@ -1,0 +1,18 @@
+{
+    "name": "discord-biolink",
+    "version": "1.0.0",
+    "description": "A simple biolink app with Discord OAuth2 authentication",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js"
+    },
+    "dependencies": {
+      "express": "^4.17.3",
+      "passport": "^0.5.1",
+      "passport-discord": "^0.1.0",
+      "ejs": "^3.1.8",
+      "express-session": "^1.17.1",
+      "axios": "^0.21.1"
+    }
+  }
+  
