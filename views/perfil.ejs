@@ -6,15 +6,17 @@
     <title>Profile</title>
 </head>
 <body>
-    <h1>User Profile</h1>
-    <p>Username: <%= user.username %></p>
-    <p>Description: <%= user.description %></p>
-    <p>Twitter: <%= user.socialLinks.twitter %></p>
-    <p>Facebook: <%= user.socialLinks.facebook %></p>
-    <p>Instagram: <%= user.socialLinks.instagram %></p>
-    <p>Profile Visits: <%= user.visits %></p>
-    <a href="/">Back to Home</a>
-    <a href="/ajustes">Settings</a>
+    <h1>Your Profile</h1>
+    <form action="/perfil/update" method="post">
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"><%= profileInfo.description || '' %></textarea>
+        <br>
+        <label for="socialLinks">Social Links (comma separated):</label>
+        <input type="text" id="socialLinks" name="socialLinks" value="<%= profileInfo.socialLinks || '' %>">
+        <br>
+        <button type="submit">Update Profile</button>
+    </form>
+    <a href="/">Go Home</a>
     <a href="/logout">Logout</a>
 </body>
 </html>

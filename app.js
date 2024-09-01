@@ -1,177 +1,123 @@
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
-const { Strategy } = require('passport-discord');
+const DiscordStrategy = require('passport-discord').Strategy;
 const fs = require('fs-extra');
 const path = require('path');
 const axios = require('axios');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
-const DATA_FILE = path.join(__dirname, 'data', 'users.json');
 
-// Load user data
-async function loadUserData() {
-  try {
-    const data = await fs.readJSON(DATA_FILE);
-    return data;
-  } catch (err) {
-    return {};
-  }
-}
-
-// Save user data
-async function saveUserData(users) {
-  try {
-    await fs.writeJSON(DATA_FILE, users);
-  } catch (err) {
-    console.error('Error saving user data:', err);
-  }
-}
-
-// Configure session
-app.use(session({
-  secret: process.env.FLASK_SECRET_KEY,
-  resave: false,
-  saveUninitialized: false,
-}));
-
-// Initialize passport
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Configure passport
-passport.use(new Strategy({
-  clientID: process.env.DISCORD_CLIENT_ID,
-  clientSecret: process.env.DISCORD_CLIENT_SECRET,
-  callbackURL: `${process.env.BASE_URL}/discord/callback`,
-  scope: ['identify', 'email']
-}, async (accessToken, refreshToken, profile, done) => {
-  const users = await loadUserData();
-  let user = users[profile.id];
-  if (!user) {
-    user = {
-      discordId: profile.id,
-      username: profile.username,
-      email: profile.email,
-      visits: 0,
-      description: '',
-      socialLinks: {
-        twitter: '',
-        facebook: '',
-        instagram: ''
-      }
-    };
-    users[profile.id] = user;
-    await saveUserData(users);
-  }
-  return done(null, user);
+// Setup Passport
+passport.use(new DiscordStrategy({
+    clientID: process.env.DISCORD_CLIENT_ID,
+    clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    callbackURL: `${process.env.BASE_URL}/discord/callback`,
+    scope: ['identify', 'email']
+}, (accessToken, refreshToken, profile, done) => {
+    return done(null, { profile, accessToken });
 }));
 
 passport.serializeUser((user, done) => {
-  done(null, user.discordId);
+    done(null, user);
 });
 
-passport.deserializeUser(async (id, done) => {
-  const users = await loadUserData();
-  const user = users[id];
-  done(null, user);
+passport.deserializeUser((obj, done) => {
+    done(null, obj);
 });
 
-// Middleware to count profile visits
-async function countProfileVisits(req, res, next) {
-  if (req.isAuthenticated()) {
-    const users = await loadUserData();
-    const user = users[req.user.discordId];
-    if (user) {
-      user.visits += 1;
-      await saveUserData(users);
-    }
-  }
-  next();
-}
+// Middleware
+app.use(session({
+    secret: process.env.FLASK_SECRET_KEY,
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// Middleware to send Discord notifications
-async function sendDiscordNotification(message) {
-  try {
-    await axios.post(DISCORD_WEBHOOK_URL, { content: message });
-  } catch (error) {
-    console.error('Error sending Discord notification:', error);
-  }
-}
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Webhook URL
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1279633587494322258/E-cVxbD0uuBBDI1HtbAM2crWXK7ymnilujVwExR5yEHH-IDIMKBhzN-tFLzeE8Xgid6p';
+
+const sendWebhookMessage = (content) => {
+    axios.post(DISCORD_WEBHOOK_URL, {
+        content: content
+    }).catch(err => console.error('Error sending webhook:', err));
+};
 
 // Routes
 app.get('/', (req, res) => {
-  if (!req.isAuthenticated()) {
-    res.redirect('/login');
-  } else {
-    res.render('index', { user: req.user });
-  }
-});
-
-app.get('/perfil', countProfileVisits, async (req, res) => {
-  if (!req.isAuthenticated()) {
-    res.redirect('/login');
-  } else {
-    res.render('perfil', { user: req.user });
-  }
-});
-
-app.get('/ajustes', (req, res) => {
-  if (!req.isAuthenticated()) {
-    res.redirect('/login');
-  } else {
-    res.render('ajustes', { user: req.user });
-  }
-});
-
-app.post('/ajustes', express.urlencoded({ extended: true }), async (req, res) => {
-  if (!req.isAuthenticated()) {
-    res.redirect('/login');
-  } else {
-    const { description, twitter, facebook, instagram } = req.body;
-    const users = await loadUserData();
-    const user = users[req.user.discordId];
-    if (user) {
-      user.description = description;
-      user.socialLinks.twitter = twitter;
-      user.socialLinks.facebook = facebook;
-      user.socialLinks.instagram = instagram;
-      await saveUserData(users);
-
-      // Notify Discord channel
-      await sendDiscordNotification(`User ${user.username} updated their profile settings.`);
+    if (!req.isAuthenticated()) {
+        return res.redirect('/discord/login');
     }
-    res.redirect('/ajustes');
-  }
+    const user = req.user;
+    sendWebhookMessage(`User ${user.profile.username} has logged in.`);
+    res.render('index.ejs', { user });
 });
 
-app.get('/login', (req, res) => {
-  res.redirect('/auth/discord');
-});
+app.get('/discord/login', passport.authenticate('discord'));
 
-app.get('/auth/discord',
-  passport.authenticate('discord'));
-
-app.get('/discord/callback',
-  passport.authenticate('discord', { failureRedirect: '/' }),
-  (req, res) => {
+app.get('/discord/callback', passport.authenticate('discord', {
+    failureRedirect: '/'
+}), (req, res) => {
     res.redirect('/');
-  });
+});
+
+app.get('/perfil', (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.redirect('/discord/login');
+    }
+
+    const user = req.user;
+    const filePath = path.join(__dirname, 'user_profiles.json');
+    let profileInfo = {};
+
+    if (fs.existsSync(filePath)) {
+        const profiles = fs.readJSONSync(filePath);
+        profileInfo = profiles[user.profile.id] || {};
+    }
+
+    res.render('perfil.ejs', { user, profileInfo });
+});
+
+app.post('/perfil/update', (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.redirect('/discord/login');
+    }
+
+    const user = req.user;
+    const { description, socialLinks } = req.body;
+    const filePath = path.join(__dirname, 'user_profiles.json');
+    
+    let profiles = {};
+    if (fs.existsSync(filePath)) {
+        profiles = fs.readJSONSync(filePath);
+    }
+
+    if (!profiles[user.profile.id]) {
+        profiles[user.profile.id] = {};
+    }
+    profiles[user.profile.id].description = description;
+    profiles[user.profile.id].socialLinks = socialLinks;
+
+    fs.writeJSONSync(filePath, profiles);
+
+    sendWebhookMessage(`User ${user.profile.username} has updated their profile.`);
+    
+    res.redirect('/perfil');
+});
 
 app.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+    req.logout();
+    res.redirect('/');
 });
 
-// View engine
-app.set('view engine', 'ejs');
-
-// Serve static files
-app.use(express.static('public'));
-
-// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
