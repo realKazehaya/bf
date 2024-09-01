@@ -4,7 +4,7 @@ from flask_dance.contrib.discord import make_discord_blueprint, discord
 import os
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'mysecret')
+app.secret_key = os.getenv('SECRET_KEY', 'mysecret')  # Usa una clave secreta segura
 
 # Configura Flask-Dance para autenticarse con Discord
 discord_bp = make_discord_blueprint(
@@ -50,4 +50,4 @@ def logout():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
