@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')  # Genera una clave secreta por defecto si no está en .env
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')  # Usa una clave secreta segura
 app.config['SESSION_COOKIE_NAME'] = 'biolink_session'
 
 # Configura el blueprint de Discord
 discord_bp = make_discord_blueprint(
     client_id=os.getenv('DISCORD_CLIENT_ID'),
     client_secret=os.getenv('DISCORD_CLIENT_SECRET'),
-    redirect_to='discord_callback',
+    redirect_to='discord_callback',  # La función que maneja la redirección
     scope=['identify', 'email']
 )
 app.register_blueprint(discord_bp, url_prefix='/discord_login')
