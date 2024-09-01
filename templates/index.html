@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biolink - Inicio</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <title>Biolink</title>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="text-center">
-        <h1 class="text-4xl font-bold mb-4">Bienvenido a Biolink</h1>
-        <p class="mb-4">Inicia sesión para acceder a tu perfil:</p>
-        <a href="{{ url_for('discord.login') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Iniciar sesión con Discord</a>
-    </div>
+<body>
+    <h1>Welcome, {{ user['username'] }}</h1>
+    <a href="{{ url_for('perfil') }}">Perfil</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
 </body>
 </html>
