@@ -4,7 +4,7 @@ from flask_dance.contrib.discord import make_discord_blueprint, discord
 import os
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'mysecret')  # Usa una clave secreta segura
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key')  # Usa una clave secreta segura
 
 # Configura Flask-Dance para autenticarse con Discord
 discord_bp = make_discord_blueprint(
@@ -30,12 +30,12 @@ def login():
 def profile():
     if not discord.authorized:
         return redirect(url_for('discord.login'))
-    
+
     try:
         user_info = discord.get('/users/@me')
         user_info.raise_for_status()  # Verifica si la solicitud a la API fue exitosa
         user = user_info.json()
-        
+
         # Enviar información a Discord
         data = {
             'content': f'Inicio de sesión: Usuario {user["username"]} ({user["id"]})',
@@ -43,7 +43,7 @@ def profile():
         }
         response = requests.post(DISCORD_WEBHOOK_URL, json=data)
         response.raise_for_status()  # Verifica si la solicitud al webhook fue exitosa
-        
+
         return render_template('perfil.html', user=user)
     except requests.exceptions.RequestException as e:
         # Manejar errores de red o HTTP
