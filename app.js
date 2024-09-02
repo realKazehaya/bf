@@ -1,123 +1,150 @@
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
-const { Strategy: DiscordStrategy } = require('passport-discord');
-const fs = require('fs-extra');
-const path = require('path');
+const DiscordStrategy = require('passport-discord').Strategy;
 const axios = require('axios');
-require('dotenv').config();
+const ejs = require('ejs');
+const path = require('path');
+const fs = require('fs');
+const { Client } = require('pg'); // Import PostgreSQL client
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-// Setup Passport
+// PostgreSQL client setup
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+client.connect();
+
+// Passport setup
 passport.use(new DiscordStrategy({
-    clientID: process.env.DISCORD_CLIENT_ID,
-    clientSecret: process.env.DISCORD_CLIENT_SECRET,
-    callbackURL: `${process.env.BASE_URL}/discord/callback`,
-    scope: ['identify', 'email']
-}, (accessToken, refreshToken, profile, done) => {
-    return done(null, { profile, accessToken });
+  clientID: process.env.DISCORD_CLIENT_ID,
+  clientSecret: process.env.DISCORD_CLIENT_SECRET,
+  callbackURL: `${process.env.BASE_URL}/discord/callback`,
+  scope: ['identify', 'email']
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    // Store user profile in database
+    await client.query(
+      'INSERT INTO users (id, username, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username, email = EXCLUDED.email',
+      [profile.id, profile.username, profile.email]
+    );
+    return done(null, profile);
+  } catch (err) {
+    console.error('Database error:', err);
+    return done(err, null);
+  }
 }));
 
 passport.serializeUser((user, done) => {
-    done(null, user);
+  done(null, user.id);
 });
 
-passport.deserializeUser((obj, done) => {
-    done(null, obj);
+passport.deserializeUser(async (id, done) => {
+  try {
+    const res = await client.query('SELECT * FROM users WHERE id = $1', [id]);
+    done(null, res.rows[0]);
+  } catch (err) {
+    done(err, null);
+  }
 });
 
-// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    secret: process.env.FLASK_SECRET_KEY,
-    resave: false,
-    saveUninitialized: false
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Routes
+app.get('/', (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return;
+  }
+  res.redirect(`/profile/${req.user.id}`);
+});
+
+app.get('/login', passport.authenticate('discord'));
+
+app.get('/discord/callback', passport.authenticate('discord', {
+  failureRedirect: '/login'
+}), (req, res) => {
+  res.redirect('/');
+});
+
+app.get('/profile/:id', async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return;
+  }
+  
+  try {
+    const userId = req.params.id;
+    const { rows } = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
+    if (rows.length === 0) {
+      res.status(404).send('Profile not found');
+      return;
+    }
+    const user = rows[0];
+    
+    // Increment profile views
+    await client.query('UPDATE users SET views = views + 1 WHERE id = $1', [userId]);
+    
+    res.render('profile', { user });
+  } catch (err) {
+    console.error('Database error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/settings', (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return;
+  }
+  res.render('settings', { user: req.user });
+});
+
+app.post('/settings', async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return;
+  }
+
+  const { description, socialLinks } = req.body;
+  try {
+    await client.query(
+      'UPDATE users SET description = $1, social_links = $2 WHERE id = $3',
+      [description, socialLinks, req.user.id]
+    );
+    // Notify about the changes
+    await axios.post(process.env.DISCORD_WEBHOOK_URL, {
+      content: `User ${req.user.username} updated their profile.`
+    });
+    res.redirect(`/profile/${req.user.id}`);
+  } catch (err) {
+    console.error('Database error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Webhook URL
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1279633587494322258/E-cVxbD0uuBBDI1HtbAM2crWXK7ymnilujVwExR5yEHH-IDIMKBhzN-tFLzeE8Xgid6p';
-
-const sendWebhookMessage = (content) => {
-    axios.post(DISCORD_WEBHOOK_URL, {
-        content: content
-    }).catch(err => console.error('Error sending webhook:', err));
-};
-
-// Routes
-app.get('/', (req, res) => {
-    if (!req.isAuthenticated()) {
-        return res.redirect('/discord/login');
-    }
-    const user = req.user;
-    sendWebhookMessage(`User ${user.profile.username} has logged in.`);
-    res.render('index.ejs', { user });
-});
-
-app.get('/discord/login', passport.authenticate('discord'));
-
-app.get('/discord/callback', passport.authenticate('discord', {
-    failureRedirect: '/'
-}), (req, res) => {
-    res.redirect('/');
-});
-
-app.get('/perfil', (req, res) => {
-    if (!req.isAuthenticated()) {
-        return res.redirect('/discord/login');
-    }
-
-    const user = req.user;
-    const filePath = path.join(__dirname, 'user_profiles.json');
-    let profileInfo = {};
-
-    if (fs.existsSync(filePath)) {
-        const profiles = fs.readJSONSync(filePath);
-        profileInfo = profiles[user.profile.id] || {};
-    }
-
-    res.render('perfil.ejs', { user, profileInfo });
-});
-
-app.post('/perfil/update', (req, res) => {
-    if (!req.isAuthenticated()) {
-        return res.redirect('/discord/login');
-    }
-
-    const user = req.user;
-    const { description, socialLinks } = req.body;
-    const filePath = path.join(__dirname, 'user_profiles.json');
-    
-    let profiles = {};
-    if (fs.existsSync(filePath)) {
-        profiles = fs.readJSONSync(filePath);
-    }
-
-    if (!profiles[user.profile.id]) {
-        profiles[user.profile.id] = {};
-    }
-    profiles[user.profile.id].description = description;
-    profiles[user.profile.id].socialLinks = socialLinks;
-
-    fs.writeJSONSync(filePath, profiles);
-
-    sendWebhookMessage(`User ${user.profile.username} has updated their profile.`);
-    
-    res.redirect('/perfil');
-});
-
-app.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/');
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });

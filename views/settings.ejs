@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings - <%= user.username %></title>
+</head>
+<body>
+    <h1>Settings</h1>
+    <form action="/settings" method="post">
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"><%= user.description %></textarea>
+        <br>
+        <label for="socialLinks">Social Links:</label>
+        <textarea id="socialLinks" name="socialLinks"><%= user.social_links %></textarea>
+        <br>
+        <button type="submit">Save Changes</button>
+    </form>
+</body>
+</html>
