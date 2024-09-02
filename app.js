@@ -1,7 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
-const DiscordStrategy = require('passport-discord').Strategy;
+const { Strategy: DiscordStrategy } = require('passport-discord');
 const fs = require('fs-extra');
 const path = require('path');
 const axios = require('axios');
