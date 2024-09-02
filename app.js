@@ -7,6 +7,8 @@ const ejs = require('ejs');
 const path = require('path');
 const { Client } = require('pg'); // Import PostgreSQL client
 const dotenv = require('dotenv');
+const RedisStore = require('connect-redis')(session);
+const redis = require('redis');
 
 dotenv.config();
 
@@ -21,8 +23,36 @@ const client = new Client({
   }
 });
 
-// Connect to PostgreSQL
-client.connect().catch(err => {
+// Initialize Redis client
+const redisClient = redis.createClient({
+  url: process.env.REDIS_URL
+});
+
+// Function to initialize database schema
+const initializeDatabase = async () => {
+  const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(255) PRIMARY KEY,
+      username VARCHAR(255),
+      email VARCHAR(255),
+      description TEXT,
+      social_links TEXT,
+      views INT DEFAULT 0
+    );
+  `;
+
+  try {
+    await client.query(createTableQuery);
+    console.log('Database schema initialized.');
+  } catch (err) {
+    console.error('Error initializing database schema:', err);
+  }
+};
+
+// Connect to PostgreSQL and initialize the database
+client.connect().then(() => {
+  initializeDatabase();
+}).catch(err => {
   console.error('Database connection error:', err);
 });
 
@@ -62,6 +92,7 @@ passport.deserializeUser(async (id, done) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
+  store: new RedisStore({ client: redisClient }),
   secret: process.env.SESSION_SECRET, // Ensure SESSION_SECRET is set in environment variables
   resave: false,
   saveUninitialized: false
