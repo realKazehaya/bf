@@ -5,7 +5,6 @@ const DiscordStrategy = require('passport-discord').Strategy;
 const axios = require('axios');
 const ejs = require('ejs');
 const path = require('path');
-const fs = require('fs');
 const { Client } = require('pg'); // Import PostgreSQL client
 const dotenv = require('dotenv');
 
@@ -21,7 +20,11 @@ const client = new Client({
     rejectUnauthorized: false
   }
 });
-client.connect();
+
+// Connect to PostgreSQL
+client.connect().catch(err => {
+  console.error('Database connection error:', err);
+});
 
 // Passport setup
 passport.use(new DiscordStrategy({
