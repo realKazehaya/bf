@@ -13,7 +13,7 @@
       "express": "^4.18.2",
       "express-session": "^1.17.3",
       "passport": "^0.6.0",
-      "passport-discord": "^0.5.0",
+      "passport-discord": "^0.4.0", 
       "fs-extra": "^11.1.1"
     },
     "devDependencies": {
