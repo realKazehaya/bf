@@ -15,7 +15,8 @@
       "passport": "^0.6.0",
       "passport-discord": "^0.1.4",
       "fs-extra": "^11.1.1",
-      "dotenv": "^16.0.0"
+      "dotenv": "^16.0.0",
+      "pg": "^8.7.1" 
     },
     "devDependencies": {
       "nodemon": "^2.0.22"
