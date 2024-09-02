@@ -62,7 +62,7 @@ passport.deserializeUser(async (id, done) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET, // Ensure SESSION_SECRET is set in environment variables
   resave: false,
   saveUninitialized: false
 }));
