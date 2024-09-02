@@ -7,7 +7,7 @@ const ejs = require('ejs');
 const path = require('path');
 const { Client } = require('pg'); // Import PostgreSQL client
 const dotenv = require('dotenv');
-const RedisStore = require('connect-redis')(session);
+const RedisStore = require('connect-redis').default; // Asegúrate de importar correctamente
 const redis = require('redis');
 
 dotenv.config();
@@ -27,6 +27,7 @@ const client = new Client({
 const redisClient = redis.createClient({
   url: process.env.REDIS_URL
 });
+redisClient.connect().catch(console.error);
 
 // Function to initialize database schema
 const initializeDatabase = async () => {
@@ -93,7 +94,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
   store: new RedisStore({ client: redisClient }),
-  secret: process.env.SESSION_SECRET, // Ensure SESSION_SECRET is set in environment variables
+  secret: process.env.SESSION_SECRET, // Asegúrate de que SESSION_SECRET esté configurado
   resave: false,
   saveUninitialized: false
 }));
