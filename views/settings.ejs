@@ -1,18 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Settings - <%= user.username %></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Settings</h1>
-    <form action="/settings" method="post">
-        <label for="description">Description:</label>
-        <textarea id="description" name="description"><%= user.description %></textarea>
-        <br>
-        <label for="socialLinks">Social Links:</label>
-        <textarea id="socialLinks" name="socialLinks"><%= user.social_links %></textarea>
-        <br>
-        <button type="submit">Save Changes</button>
-    </form>
+    <div class="container mt-4">
+        <h1 class="mb-4">Settings</h1>
+        <form action="/settings" method="POST">
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" class="form-control" rows="4"><%= user.description || '' %></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="socialLinks">Social Links:</label>
+                <div id="social-links">
+                    <div class="form-group">
+                        <input type="text" name="socialLinks[instagram]" class="form-control mb-2" placeholder="Instagram" value="<%= user.social_links.instagram || '' %>">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="socialLinks[facebook]" class="form-control mb-2" placeholder="Facebook" value="<%= user.social_links.facebook || '' %>">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="socialLinks[tiktok]" class="form-control mb-2" placeholder="TikTok" value="<%= user.social_links.tiktok || '' %>">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="socialLinks[discord]" class="form-control mb-2" placeholder="Discord" value="<%= user.social_links.discord || '' %>">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="socialLinks[paypal]" class="form-control mb-2" placeholder="PayPal" value="<%= user.social_links.paypal || '' %>">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="presence">Discord Presence:</label>
+                <input type="text" id="presence" name="presence" class="form-control" placeholder="e.g., Playing a game" value="<%= user.presence || '' %>">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+
+        <div class="badges mt-4">
+            <h2>Your Badges</h2>
+            <% if (user.badges && user.badges.length > 0) { %>
+                <div class="row">
+                    <% user.badges.forEach(badge => { %>
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <img src="/images/<%= badge %>" alt="<%= badge %>" class="img-fluid mb-2">
+                                <div><%= badge.replace('.png', '').replace(/_/g, ' ').toUpperCase() %></div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <p>No badges yet.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -37,8 +37,11 @@ const initializeDatabase = async () => {
       username VARCHAR(255),
       email VARCHAR(255),
       description TEXT,
-      social_links TEXT,
-      views INT DEFAULT 0
+      social_links JSONB,
+      views INT DEFAULT 0,
+      badges TEXT[] DEFAULT '{}',
+      presence VARCHAR(255),
+      custom_username VARCHAR(255) UNIQUE
     );
   `;
 
@@ -110,26 +113,66 @@ app.get('/', (req, res) => {
     res.redirect('/login');
     return;
   }
-  res.redirect(`/profile/${req.user.id}`);
+  res.redirect(`/profile/${req.user.custom_username || req.user.id}`);
 });
 
 app.get('/login', passport.authenticate('discord'));
 
 app.get('/discord/callback', passport.authenticate('discord', {
   failureRedirect: '/login'
-}), (req, res) => {
-  res.redirect('/');
+}), async (req, res) => {
+  // Check if the user has set a custom username
+  const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
+  const customUsername = userRes.rows[0]?.custom_username;
+
+  if (!customUsername) {
+    // Redirect to choose username if not set
+    res.redirect('/choose-username');
+  } else {
+    res.redirect('/');
+  }
 });
 
-app.get('/profile/:id', async (req, res) => {
+app.get('/choose-username', (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return;
+  }
+  res.render('choose-username');
+});
+
+app.post('/choose-username', async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return;
+  }
+
+  const { customUsername } = req.body;
+  try {
+    // Check if the custom username is already taken
+    const existingUser = await client.query('SELECT * FROM users WHERE custom_username = $1', [customUsername]);
+    if (existingUser.rows.length > 0) {
+      return res.render('choose-username', { error: 'Username already taken' });
+    }
+
+    // Update the custom username
+    await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);
+    res.redirect('/');
+  } catch (err) {
+    console.error('Database error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/profile/:username', async (req, res) => {
   if (!req.isAuthenticated()) {
     res.redirect('/login');
     return;
   }
   
   try {
-    const userId = req.params.id;
-    const { rows } = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
+    const { username } = req.params;
+    const { rows } = await client.query('SELECT * FROM users WHERE custom_username = $1', [username]);
     if (rows.length === 0) {
       res.status(404).send('Profile not found');
       return;
@@ -137,7 +180,7 @@ app.get('/profile/:id', async (req, res) => {
     const user = rows[0];
     
     // Increment profile views
-    await client.query('UPDATE users SET views = views + 1 WHERE id = $1', [userId]);
+    await client.query('UPDATE users SET views = views + 1 WHERE custom_username = $1', [username]);
     
     res.render('profile', { user });
   } catch (err) {
@@ -160,17 +203,21 @@ app.post('/settings', async (req, res) => {
     return;
   }
 
-  const { description, socialLinks } = req.body;
+  const { description, socialLinks, presence } = req.body;
   try {
+    // Convert socialLinks object to JSON string
+    const socialLinksJson = JSON.stringify(socialLinks);
+
     await client.query(
-      'UPDATE users SET description = $1, social_links = $2 WHERE id = $3',
-      [description, socialLinks, req.user.id]
+      'UPDATE users SET description = $1, social_links = $2, presence = $3 WHERE id = $4',
+      [description, socialLinksJson, presence, req.user.id]
     );
+    
     // Notify about the changes
     await axios.post(process.env.DISCORD_WEBHOOK_URL, {
       content: `User ${req.user.username} updated their profile.`
     });
-    res.redirect(`/profile/${req.user.id}`);
+    res.redirect(`/profile/${req.user.custom_username || req.user.id}`);
   } catch (err) {
     console.error('Database error:', err);
     res.status(500).send('Internal Server Error');
