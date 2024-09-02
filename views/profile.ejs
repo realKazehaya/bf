@@ -1,52 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= user.custom_username || user.username %>'s Profile</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container mt-4">
+    <div class="container mt-5">
         <h1><%= user.custom_username || user.username %>'s Profile</h1>
-        <div class="card mt-4">
-            <div class="card-body">
-                <h2>About</h2>
-                <p><%= user.description || 'No description' %></p>
-                
-                <h2>Social Links</h2>
-                <ul>
-                    <% Object.keys(user.social_links).forEach(key => { %>
-                        <% if (user.social_links[key]) { %>
-                            <li><a href="<%= user.social_links[key] %>" target="_blank"><%= key.charAt(0).toUpperCase() + key.slice(1) %></a></li>
-                        <% } %>
-                    <% }) %>
-                </ul>
-                
-                <h2>Discord Presence</h2>
-                <p><%= user.presence || 'No presence set' %></p>
-
-                <h2>Badges</h2>
-                <div class="row">
-                    <% if (user.badges && user.badges.length > 0) { %>
-                        <% user.badges.forEach(badge => { %>
-                            <div class="col-md-2">
-                                <div class="text-center">
-                                    <img src="/images/<%= badge %>" alt="<%= badge %>" class="img-fluid mb-2">
-                                    <div><%= badge.replace('.png', '').replace(/_/g, ' ').toUpperCase() %></div>
-                                </div>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <p>No badges yet.</p>
-                    <% } %>
-                </div>
-            </div>
-        </div>
+        <p><strong>Email:</strong> <%= user.email %></p>
+        <p><strong>Description:</strong> <%= user.description || 'No description' %></p>
+        <p><strong>Social Links:</strong> <%= user.social_links || 'No links' %></p>
+        <p><strong>Views:</strong> <%= user.views %></p>
+        <a href="/settings" class="btn btn-primary">Edit Profile</a>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
