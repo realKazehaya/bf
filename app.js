@@ -29,7 +29,7 @@ const redisClient = redis.createClient({
 });
 redisClient.connect().catch(console.error);
 
-// Function to initialize database schema
+// Function to initialize database schema and add the custom_username column
 const initializeDatabase = async () => {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS users (
@@ -45,44 +45,37 @@ const initializeDatabase = async () => {
     );
   `;
 
+  const addCustomUsernameColumnQuery = `
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' 
+          AND column_name = 'custom_username'
+      ) THEN
+        ALTER TABLE users 
+        ADD COLUMN custom_username VARCHAR(255) UNIQUE;
+      END IF;
+    END $$;
+  `;
+
   try {
+    // Create table if it does not exist
     await client.query(createTableQuery);
     console.log('Database schema initialized.');
+
+    // Add custom_username column if it does not exist
+    await client.query(addCustomUsernameColumnQuery);
+    console.log('Column custom_username ensured in users table.');
   } catch (err) {
     console.error('Error initializing database schema:', err);
   }
 };
 
-// Function to check and add the custom_username column
-const addCustomUsernameColumn = async () => {
-  try {
-    // Check if the column exists
-    const res = await client.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'users' 
-      AND column_name = 'custom_username';
-    `);
-
-    if (res.rows.length === 0) {
-      // Add the column if it doesn't exist
-      await client.query(`
-        ALTER TABLE users 
-        ADD COLUMN custom_username VARCHAR(255) UNIQUE;
-      `);
-      console.log('Column custom_username added to users table.');
-    } else {
-      console.log('Column custom_username already exists.');
-    }
-  } catch (err) {
-    console.error('Error adding column custom_username:', err);
-  }
-};
-
 // Connect to PostgreSQL and initialize the database
-client.connect().then(async () => {
-  await initializeDatabase();
-  await addCustomUsernameColumn();
+client.connect().then(() => {
+  initializeDatabase();
 }).catch(err => {
   console.error('Database connection error:', err);
 });
