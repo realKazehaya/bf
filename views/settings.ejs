@@ -3,7 +3,7 @@
 <head>
     <title>Settings</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"> <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <style>
         .social-icon {
             font-size: 24px;
@@ -27,19 +27,16 @@
             <div class="form-group">
                 <label>Social Links</label>
                 <div id="social-media-links">
-                    <!-- Facebook -->
                     <div class="social-icon" data-platform="facebook">
                         <i class="fab fa-facebook"></i> Facebook
                     </div>
                     <input type="text" class="form-control social-input" id="facebook-link" name="socialLinks[facebook]" placeholder="Enter your Facebook URL" value="<%= user.social_links.facebook || '' %>">
 
-                    <!-- Twitter -->
                     <div class="social-icon" data-platform="twitter">
                         <i class="fab fa-twitter"></i> Twitter
                     </div>
                     <input type="text" class="form-control social-input" id="twitter-link" name="socialLinks[twitter]" placeholder="Enter your Twitter URL" value="<%= user.social_links.twitter || '' %>">
 
-                    <!-- Instagram -->
                     <div class="social-icon" data-platform="instagram">
                         <i class="fab fa-instagram"></i> Instagram
                     </div>
@@ -65,5 +62,8 @@
             });
         });
     </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
