@@ -127,16 +127,20 @@ app.set('views', path.join(__dirname, 'views'));
 // Routes
 app.get('/', async (req, res) => {
   if (!req.isAuthenticated()) {
-    res.redirect('/login');
-    return;
+    return res.redirect('/login');
   }
-  const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
-  const customUsername = userRes.rows[0]?.custom_username;
+  try {
+    const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
+    const customUsername = userRes.rows[0]?.custom_username;
 
-  if (!customUsername) {
-    res.redirect('/choose-username');
-  } else {
-    res.redirect(`/profile/${customUsername}`);
+    if (!customUsername) {
+      return res.redirect('/choose-username');
+    } else {
+      return res.redirect(`/profile/${customUsername}`);
+    }
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).send('Internal Server Error');
   }
 });
 
@@ -145,28 +149,31 @@ app.get('/login', passport.authenticate('discord'));
 app.get('/discord/callback', passport.authenticate('discord', {
   failureRedirect: '/login'
 }), async (req, res) => {
-  const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
-  const customUsername = userRes.rows[0]?.custom_username;
+  try {
+    const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
+    const customUsername = userRes.rows[0]?.custom_username;
 
-  if (!customUsername) {
-    res.redirect('/choose-username');
-  } else {
-    res.redirect('/');
+    if (!customUsername) {
+      return res.redirect('/choose-username');
+    } else {
+      return res.redirect('/');
+    }
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).send('Internal Server Error');
   }
 });
 
 app.get('/choose-username', (req, res) => {
   if (!req.isAuthenticated()) {
-    res.redirect('/login');
-    return;
+    return res.redirect('/login');
   }
   res.render('choose-username', { error: null }); // Pasar `error` como `null` para evitar el problema
 });
 
 app.post('/choose-username', async (req, res) => {
   if (!req.isAuthenticated()) {
-    res.redirect('/login');
-    return;
+    return res.redirect('/login');
   }
 
   const { customUsername } = req.body;
@@ -177,49 +184,45 @@ app.post('/choose-username', async (req, res) => {
     }
 
     await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);
-    res.redirect('/');
+    return res.redirect('/');
   } catch (err) {
     console.error('Database error:', err);
-    res.status(500).send('Internal Server Error');
+    return res.status(500).send('Internal Server Error');
   }
 });
 
 app.get('/profile/:username', async (req, res) => {
   if (!req.isAuthenticated()) {
-    res.redirect('/login');
-    return;
+    return res.redirect('/login');
   }
   
   try {
     const { username } = req.params;
     const { rows } = await client.query('SELECT * FROM users WHERE custom_username = $1', [username]);
     if (rows.length === 0) {
-      res.status(404).send('Profile not found');
-      return;
+      return res.status(404).send('Profile not found');
     }
     const user = rows[0];
     
     await client.query('UPDATE users SET views = views + 1 WHERE custom_username = $1', [username]);
     
-    res.render('profile', { user });
+    return res.render('profile', { user });
   } catch (err) {
     console.error('Database error:', err);
-    res.status(500).send('Internal Server Error');
+    return res.status(500).send('Internal Server Error');
   }
 });
 
 app.get('/settings', (req, res) => {
   if (!req.isAuthenticated()) {
-    res.redirect('/login');
-    return;
+    return res.redirect('/login');
   }
   res.render('settings', { user: req.user });
 });
 
 app.post('/settings', async (req, res) => {
   if (!req.isAuthenticated()) {
-    res.redirect('/login');
-    return;
+    return res.redirect('/login');
   }
 
   const { description, socialLinks, presence } = req.body;
@@ -234,10 +237,10 @@ app.post('/settings', async (req, res) => {
     await axios.post(process.env.DISCORD_WEBHOOK_URL, {
       content: `User ${req.user.username} updated their profile.`
     });
-    res.redirect(`/profile/${req.user.custom_username || req.user.id}`);
+    return res.redirect(`/profile/${req.user.custom_username || req.user.id}`);
   } catch (err) {
     console.error('Database error:', err);
-    res.status(500).send('Internal Server Error');
+    return res.status(500).send('Internal Server Error');
   }
 });
 
