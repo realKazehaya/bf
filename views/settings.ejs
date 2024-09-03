@@ -3,18 +3,6 @@
 <head>
     <title>Settings</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-    <style>
-        .social-icon {
-            font-size: 24px;
-            margin: 10px;
-            cursor: pointer;
-        }
-        .social-input {
-            display: none;
-            margin-bottom: 10px;
-        }
-    </style>
 </head>
 <body>
     <div class="container mt-5">
@@ -25,25 +13,8 @@
                 <textarea class="form-control" id="description" name="description"><%= user.description || '' %></textarea>
             </div>
             <div class="form-group">
-                <label>Social Links</label>
-                <div id="social-media-links">
-                    <div class="social-icon" data-platform="facebook">
-                        <i class="fab fa-facebook"></i> Facebook
-                    </div>
-                    <input type="text" class="form-control social-input" id="facebook-link" name="socialLinks[facebook]" placeholder="Enter your Facebook URL" value="<%= user.social_links.facebook || '' %>">
-
-                    <div class="social-icon" data-platform="twitter">
-                        <i class="fab fa-twitter"></i> Twitter
-                    </div>
-                    <input type="text" class="form-control social-input" id="twitter-link" name="socialLinks[twitter]" placeholder="Enter your Twitter URL" value="<%= user.social_links.twitter || '' %>">
-
-                    <div class="social-icon" data-platform="instagram">
-                        <i class="fab fa-instagram"></i> Instagram
-                    </div>
-                    <input type="text" class="form-control social-input" id="instagram-link" name="socialLinks[instagram]" placeholder="Enter your Instagram URL" value="<%= user.social_links.instagram || '' %>">
-
-                    <!-- Add more social icons as needed -->
-                </div>
+                <label for="socialLinks">Social Links (JSON format)</label>
+                <textarea class="form-control" id="socialLinks" name="socialLinks" rows="5"><%= JSON.stringify(user.social_links) || '{}' %></textarea>
             </div>
             <div class="form-group">
                 <label for="discordId">Discord ID</label>
@@ -52,18 +23,5 @@
             <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
     </div>
-
-    <script>
-        document.querySelectorAll('.social-icon').forEach(icon => {
-            icon.addEventListener('click', () => {
-                const platform = icon.getAttribute('data-platform');
-                const inputField = document.getElementById(`${platform}-link`);
-                inputField.style.display = inputField.style.display === 'none' || inputField.style.display === '' ? 'block' : 'none';
-            });
-        });
-    </script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -2,13 +2,13 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
-const axios = require('axios');
-const ejs = require('ejs');
-const path = require('path');
 const { Client } = require('pg');
-const dotenv = require('dotenv');
 const RedisStore = require('connect-redis').default;
 const redis = require('redis');
+const dotenv = require('dotenv');
+const path = require('path');
+const ejs = require('ejs');
+const axios = require('axios');
 
 dotenv.config();
 
@@ -18,18 +18,14 @@ const port = process.env.PORT || 3000;
 // PostgreSQL client setup
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
 
 // Initialize Redis client
-const redisClient = redis.createClient({
-  url: process.env.REDIS_URL
-});
+const redisClient = redis.createClient({ url: process.env.REDIS_URL });
 redisClient.connect().catch(console.error);
 
-// Function to initialize database schema
+// Initialize database
 const initializeDatabase = async () => {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS users (
@@ -45,7 +41,6 @@ const initializeDatabase = async () => {
       discord_id VARCHAR(255) UNIQUE
     );
   `;
-
   try {
     await client.query(createTableQuery);
     console.log('Database schema initialized.');
@@ -55,11 +50,7 @@ const initializeDatabase = async () => {
 };
 
 // Connect to PostgreSQL and initialize the database
-client.connect().then(() => {
-  initializeDatabase();
-}).catch(err => {
-  console.error('Database connection error:', err);
-});
+client.connect().then(() => initializeDatabase()).catch(err => console.error('Database connection error:', err));
 
 // Passport setup
 passport.use(new DiscordStrategy({
@@ -75,7 +66,7 @@ passport.use(new DiscordStrategy({
     );
     return done(null, profile);
   } catch (err) {
-    console.error('Database error during passport authentication:', err);
+    console.error('Database error:', err);
     return done(err, null);
   }
 }));
@@ -115,14 +106,13 @@ app.get('/', async (req, res) => {
   try {
     const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
     const customUsername = userRes.rows[0]?.custom_username;
-
     if (!customUsername) {
       return res.redirect('/choose-username');
     } else {
       return res.redirect(`/profile/${customUsername}`);
     }
   } catch (err) {
-    console.error('Database error in / route:', err);
+    console.error('Database error:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
@@ -135,14 +125,13 @@ app.get('/discord/callback', passport.authenticate('discord', {
   try {
     const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
     const customUsername = userRes.rows[0]?.custom_username;
-
     if (!customUsername) {
       return res.redirect('/choose-username');
     } else {
       return res.redirect('/');
     }
   } catch (err) {
-    console.error('Database error in /discord/callback route:', err);
+    console.error('Database error:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
@@ -165,11 +154,10 @@ app.post('/choose-username', async (req, res) => {
     if (existingUser.rows.length > 0) {
       return res.render('choose-username', { error: 'Username already taken' });
     }
-
     await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);
     return res.redirect('/');
   } catch (err) {
-    console.error('Database error in /choose-username route:', err);
+    console.error('Database error:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
@@ -186,12 +174,10 @@ app.get('/profile/:username', async (req, res) => {
       return res.status(404).send('Profile not found');
     }
     const user = rows[0];
-    
     await client.query('UPDATE users SET views = views + 1 WHERE custom_username = $1', [username]);
-    
     return res.render('profile', { user });
   } catch (err) {
-    console.error('Database error in /profile/:username route:', err);
+    console.error('Database error:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
@@ -211,16 +197,10 @@ app.post('/settings', async (req, res) => {
   const { description, socialLinks, discordId } = req.body;
 
   try {
-    // Parse and handle socialLinks
-    let socialLinksObj = {};
+    let socialLinksObj;
     try {
-      if (typeof socialLinks === 'string') {
-        socialLinksObj = JSON.parse(socialLinks);
-      } else if (typeof socialLinks === 'object') {
-        socialLinksObj = socialLinks;
-      }
+      socialLinksObj = JSON.parse(socialLinks);
     } catch (error) {
-      console.error('Error parsing social links:', error);
       return res.status(400).send('Invalid social links format');
     }
 
@@ -229,22 +209,13 @@ app.post('/settings', async (req, res) => {
       [description, JSON.stringify(socialLinksObj), discordId, req.user.id]
     );
 
-    if (process.env.DISCORD_WEBHOOK_URL) {
-      await axios.post(process.env.DISCORD_WEBHOOK_URL, {
-        content: `User ${req.user.username} updated their profile.`
-      });
-    }
-
     return res.redirect(`/profile/${req.user.custom_username || req.user.id}`);
   } catch (err) {
-    console.error('Database error in /settings route:', err);
+    console.error('Database error:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });
