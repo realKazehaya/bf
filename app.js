@@ -160,7 +160,7 @@ app.get('/choose-username', (req, res) => {
     res.redirect('/login');
     return;
   }
-  res.render('choose-username');
+  res.render('choose-username', { error: null }); // Pasar `error` como `null` para evitar el problema
 });
 
 app.post('/choose-username', async (req, res) => {
@@ -173,7 +173,7 @@ app.post('/choose-username', async (req, res) => {
   try {
     const existingUser = await client.query('SELECT * FROM users WHERE custom_username = $1', [customUsername]);
     if (existingUser.rows.length > 0) {
-      return res.render('choose-username', { error: 'Username already taken' });
+      return res.render('choose-username', { error: 'Username already taken' }); // Pasar `error` a la vista
     }
 
     await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);

@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Choose Username</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/path/to/your/styles.css">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Choose Your Username</h1>
-        <form method="post" action="/choose-username">
+    <div class="container">
+        <h1>Choose a Custom Username</h1>
+        <form action="/choose-username" method="post">
             <div class="form-group">
                 <label for="customUsername">Custom Username</label>
                 <input type="text" class="form-control" id="customUsername" name="customUsername" required>
-                <% if (error) { %>
-                    <div class="alert alert-danger mt-2">
-                        <%= error %>
-                    </div>
-                <% } %>
             </div>
+            <% if (typeof error !== 'undefined' && error !== null) { %>
+                <div class="alert alert-danger mt-2">
+                    <%= error %>
+                </div>
+            <% } %>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
