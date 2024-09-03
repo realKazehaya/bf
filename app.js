@@ -151,7 +151,7 @@ app.get('/choose-username', (req, res) => {
   if (!req.isAuthenticated()) {
     return res.redirect('/login');
   }
-  res.render('choose-username', { error: null }); // Pasar `error` como `null` para evitar el problema
+  res.render('choose-username', { error: null });
 });
 
 app.post('/choose-username', async (req, res) => {
@@ -163,7 +163,7 @@ app.post('/choose-username', async (req, res) => {
   try {
     const existingUser = await client.query('SELECT * FROM users WHERE custom_username = $1', [customUsername]);
     if (existingUser.rows.length > 0) {
-      return res.render('choose-username', { error: 'Username already taken' }); // Pasar `error` a la vista
+      return res.render('choose-username', { error: 'Username already taken' });
     }
 
     await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);
@@ -211,11 +211,16 @@ app.post('/settings', async (req, res) => {
   const { description, socialLinks, discordId } = req.body;
 
   try {
-    // Convert socialLinks from JSON string to object
-    let socialLinksObj;
+    // Parse and handle socialLinks
+    let socialLinksObj = {};
     try {
-      socialLinksObj = JSON.parse(socialLinks);
+      if (typeof socialLinks === 'string') {
+        socialLinksObj = JSON.parse(socialLinks);
+      } else if (typeof socialLinks === 'object') {
+        socialLinksObj = socialLinks;
+      }
     } catch (error) {
+      console.error('Error parsing social links:', error);
       return res.status(400).send('Invalid social links format');
     }
 
