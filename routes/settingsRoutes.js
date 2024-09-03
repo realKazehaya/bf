@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const settingsController = require('../controllers/settingsController');
+const settingsController = require('../controllers/settingsController'); // Asegúrate de que la ruta sea correcta
 
 // Rutas para manejar la configuración
 router.get('/', (req, res) => {
