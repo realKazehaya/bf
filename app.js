@@ -8,6 +8,8 @@ const redis = require('redis');
 const dotenv = require('dotenv');
 const path = require('path');
 const ejs = require('ejs');
+const axios = require('axios');
+const settingsRoutes = require('./routes/settingsRoutes'); // Asegúrate de importar las rutas correctamente
 
 dotenv.config();
 
@@ -37,11 +39,7 @@ const initializeDatabase = async () => {
       badges TEXT[] DEFAULT '{}',
       presence VARCHAR(255),
       custom_username VARCHAR(255) UNIQUE,
-      discord_id VARCHAR(255) UNIQUE,
-      avatar VARCHAR(255),
-      background VARCHAR(255),
-      cursor VARCHAR(255),
-      audio VARCHAR(255)
+      discord_id VARCHAR(255) UNIQUE
     );
   `;
   try {
@@ -101,25 +99,73 @@ app.use(passport.session());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware to make user available to all views
-app.use((req, res, next) => {
-  res.locals.user = req.user;
-  next();
+// Routes
+app.use('/settings', settingsRoutes); // Asegúrate de usar las rutas
+
+app.get('/', (req, res) => {
+  res.render('index');
 });
 
-// Routes
-const authRoutes = require('./routes/authRoutes');
-const profileRoutes = require('./routes/profileRoutes');
-const settingsRoutes = require('./routes/settingsRoutes');
-const uploadRoutes = require('./routes/uploadRoutes');
+app.get('/login', passport.authenticate('discord'));
 
-app.use('/', authRoutes);
-app.use('/profile', profileRoutes);
-app.use('/settings', settingsRoutes);
-app.use('/upload', uploadRoutes);
+app.get('/discord/callback', passport.authenticate('discord', {
+  failureRedirect: '/login'
+}), async (req, res) => {
+  try {
+    const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
+    const customUsername = userRes.rows[0]?.custom_username;
+    if (customUsername) {
+      return res.redirect(`/profile/${customUsername}`);
+    } else {
+      return res.redirect('/choose-username');
+    }
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).send('Internal Server Error');
+  }
+});
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.get('/choose-username', (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+  res.render('choose-username', { error: null });
+});
+
+app.post('/choose-username', async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+
+  const { customUsername } = req.body;
+  try {
+    const existingUser = await client.query('SELECT * FROM users WHERE custom_username = $1', [customUsername]);
+    if (existingUser.rows.length > 0) {
+      return res.render('choose-username', { error: 'Username already taken' });
+    }
+    await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);
+    return res.redirect(`/profile/${customUsername}`);
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/profile/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { rows } = await client.query('SELECT * FROM users WHERE custom_username = $1', [username]);
+    if (rows.length === 0) {
+      return res.status(404).send('Profile not found');
+    }
+    const user = rows[0];
+    await client.query('UPDATE users SET views = views + 1 WHERE custom_username = $1', [username]);
+    return res.render('profile', { user });
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).send('Internal Server Error');
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
