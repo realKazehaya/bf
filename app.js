@@ -8,7 +8,6 @@ const redis = require('redis');
 const dotenv = require('dotenv');
 const path = require('path');
 const ejs = require('ejs');
-const axios = require('axios');
 
 dotenv.config();
 
@@ -97,6 +96,12 @@ app.use(passport.session());
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Middleware to make user available to all views
+app.use((req, res, next) => {
+  res.locals.user = req.user;
+  next();
+});
 
 // Routes
 app.get('/', (req, res) => {
