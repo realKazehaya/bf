@@ -1,38 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Profile - <%= user.custom_username %></title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Profile of <%= user.custom_username %></title>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Profile of <%= user.custom_username %></h1>
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title"><%= user.username %></h5>
-                <p class="card-text"><%= user.description || 'No description' %></p>
-                <div class="mt-3">
-                    <h6>Social Links:</h6>
-                    <ul class="list-unstyled">
-                        <% if (user.social_links) { %>
-                            <% Object.keys(user.social_links).forEach(platform => { %>
-                                <li>
-                                    <a href="<%= user.social_links[platform] %>" target="_blank">
-                                        <%= platform.charAt(0).toUpperCase() + platform.slice(1) %>
-                                    </a>
-                                </li>
-                            <% }) %>
-                        <% } %>
-                    </ul>
-                </div>
-                <div class="mt-3">
-                    <p>Views: <%= user.views %></p>
-                    <% if (user.discord_id) { %>
-                        <p>Discord ID: <%= user.discord_id %></p>
-                    <% } %>
-                </div>
-            </div>
-        </div>
-    </div>
+    <h1>Profile of <%= user.custom_username %></h1>
+    <p><strong>Username:</strong> <%= user.username %></p>
+    <p><strong>ID:</strong> <%= user.id %></p>
+    <p><strong>Description:</strong> <%= user.description %></p>
+    <p><strong>Social Links:</strong></p>
+    <% if (user.social_links) { %>
+        <% Object.keys(user.social_links).forEach(key => { %>
+            <p><strong><%= key %>:</strong> <%= user.social_links[key] %></p>
+        <% }); %>
+    <% } else { %>
+        <p>No social links added.</p>
+    <% } %>
+    <p><strong>Views:</strong> <%= user.views %></p>
 </body>
 </html>

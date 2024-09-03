@@ -4,7 +4,7 @@
     "description": "Biolink app with Discord OAuth2 authentication",
     "main": "app.js",
     "scripts": {
-      "start": "node app.js", 
+      "start": "node app.js",
       "dev": "nodemon app.js",
       "build": "echo 'No build step defined'"
     },
@@ -19,7 +19,9 @@
       "dotenv": "^16.0.0",
       "pg": "^8.7.1",
       "connect-redis": "^7.0.1",
-      "redis": "^4.3.0"
+      "redis": "^4.3.0",
+      "multer": "^1.4.5",
+      "moment": "^2.29.4"
     },
     "devDependencies": {
       "nodemon": "^2.0.22"

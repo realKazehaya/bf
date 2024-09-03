@@ -2,26 +2,27 @@
 <html>
 <head>
     <title>Settings</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Settings</h1>
-        <form method="post" action="/settings">
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea class="form-control" id="description" name="description"><%= user.description || '' %></textarea>
-            </div>
-            <div class="form-group">
-                <label for="socialLinks">Social Links (JSON format)</label>
-                <textarea class="form-control" id="socialLinks" name="socialLinks" rows="5"><%= JSON.stringify(user.social_links) || '{}' %></textarea>
-            </div>
-            <div class="form-group">
-                <label for="discordId">Discord ID</label>
-                <input type="text" class="form-control" id="discordId" name="discordId" value="<%= user.discord_id || '' %>">
-            </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-        </form>
-    </div>
+    <h1>Settings</h1>
+    <form action="/settings" method="post">
+        <h2>Account Overview</h2>
+        <p><strong>Username:</strong> <%= user.username %></p>
+        <p><strong>ID:</strong> <%= user.id %></p>
+        <p><strong>Profile Views:</strong> <%= user.views %></p>
+
+        <h2>Account Settings</h2>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"><%= user.description %></textarea>
+
+        <label for="socialLinks">Social Links (JSON format):</label>
+        <textarea id="socialLinks" name="socialLinks"><%= JSON.stringify(user.social_links || {}) %></textarea>
+
+        <label for="discordId">Discord ID:</label>
+        <input type="text" id="discordId" name="discordId" value="<%= user.discord_id || '' %>">
+
+        <button type="submit">Save Changes</button>
+    </form>
+    <a href="/upload">Upload Assets</a>
 </body>
 </html>
