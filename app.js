@@ -46,27 +46,9 @@ const initializeDatabase = async () => {
     );
   `;
 
-  const addCustomUsernameColumnQuery = `
-    DO $$
-    BEGIN
-      IF NOT EXISTS (
-        SELECT 1 
-        FROM information_schema.columns 
-        WHERE table_name = 'users' 
-          AND column_name = 'custom_username'
-      ) THEN
-        ALTER TABLE users 
-        ADD COLUMN custom_username VARCHAR(255) UNIQUE;
-      END IF;
-    END $$;
-  `;
-
   try {
     await client.query(createTableQuery);
     console.log('Database schema initialized.');
-
-    await client.query(addCustomUsernameColumnQuery);
-    console.log('Column custom_username ensured in users table.');
   } catch (err) {
     console.error('Error initializing database schema:', err);
   }
@@ -229,12 +211,12 @@ app.post('/settings', async (req, res) => {
   const { description, socialLinks, discordId } = req.body;
 
   try {
-    // Convert socialLinks to JSON object
-    const socialLinksObj = {};
-    for (const link of socialLinks) {
-      if (link.platform && link.url) {
-        socialLinksObj[link.platform] = link.url;
-      }
+    // Convert socialLinks from JSON string to object
+    let socialLinksObj;
+    try {
+      socialLinksObj = JSON.parse(socialLinks);
+    } catch (error) {
+      return res.status(400).send('Invalid social links format');
     }
 
     await client.query(
@@ -242,9 +224,12 @@ app.post('/settings', async (req, res) => {
       [description, JSON.stringify(socialLinksObj), discordId, req.user.id]
     );
 
-    await axios.post(process.env.DISCORD_WEBHOOK_URL, {
-      content: `User ${req.user.username} updated their profile.`
-    });
+    if (process.env.DISCORD_WEBHOOK_URL) {
+      await axios.post(process.env.DISCORD_WEBHOOK_URL, {
+        content: `User ${req.user.username} updated their profile.`
+      });
+    }
+
     return res.redirect(`/profile/${req.user.custom_username || req.user.id}`);
   } catch (err) {
     console.error('Database error:', err);
