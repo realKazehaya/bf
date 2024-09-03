@@ -5,9 +5,9 @@ const DiscordStrategy = require('passport-discord').Strategy;
 const axios = require('axios');
 const ejs = require('ejs');
 const path = require('path');
-const { Client } = require('pg'); // Import PostgreSQL client
+const { Client } = require('pg');
 const dotenv = require('dotenv');
-const RedisStore = require('connect-redis').default; // Asegúrate de importar correctamente
+const RedisStore = require('connect-redis').default;
 const redis = require('redis');
 
 dotenv.config();
@@ -61,11 +61,9 @@ const initializeDatabase = async () => {
   `;
 
   try {
-    // Create table if it does not exist
     await client.query(createTableQuery);
     console.log('Database schema initialized.');
 
-    // Add custom_username column if it does not exist
     await client.query(addCustomUsernameColumnQuery);
     console.log('Column custom_username ensured in users table.');
   } catch (err) {
@@ -88,7 +86,6 @@ passport.use(new DiscordStrategy({
   scope: ['identify', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    // Store user profile in database
     await client.query(
       'INSERT INTO users (id, username, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username, email = EXCLUDED.email',
       [profile.id, profile.username, profile.email]
@@ -117,7 +114,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
   store: new RedisStore({ client: redisClient }),
-  secret: process.env.SESSION_SECRET, // Asegúrate de que SESSION_SECRET esté configurado
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false
 }));
@@ -128,12 +125,19 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   if (!req.isAuthenticated()) {
     res.redirect('/login');
     return;
   }
-  res.redirect(`/profile/${req.user.custom_username || req.user.id}`);
+  const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
+  const customUsername = userRes.rows[0]?.custom_username;
+
+  if (!customUsername) {
+    res.redirect('/choose-username');
+  } else {
+    res.redirect(`/profile/${customUsername}`);
+  }
 });
 
 app.get('/login', passport.authenticate('discord'));
@@ -141,12 +145,10 @@ app.get('/login', passport.authenticate('discord'));
 app.get('/discord/callback', passport.authenticate('discord', {
   failureRedirect: '/login'
 }), async (req, res) => {
-  // Check if the user has set a custom username
   const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
   const customUsername = userRes.rows[0]?.custom_username;
 
   if (!customUsername) {
-    // Redirect to choose username if not set
     res.redirect('/choose-username');
   } else {
     res.redirect('/');
@@ -169,13 +171,11 @@ app.post('/choose-username', async (req, res) => {
 
   const { customUsername } = req.body;
   try {
-    // Check if the custom username is already taken
     const existingUser = await client.query('SELECT * FROM users WHERE custom_username = $1', [customUsername]);
     if (existingUser.rows.length > 0) {
       return res.render('choose-username', { error: 'Username already taken' });
     }
 
-    // Update the custom username
     await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);
     res.redirect('/');
   } catch (err) {
@@ -199,7 +199,6 @@ app.get('/profile/:username', async (req, res) => {
     }
     const user = rows[0];
     
-    // Increment profile views
     await client.query('UPDATE users SET views = views + 1 WHERE custom_username = $1', [username]);
     
     res.render('profile', { user });
@@ -225,7 +224,6 @@ app.post('/settings', async (req, res) => {
 
   const { description, socialLinks, presence } = req.body;
   try {
-    // Convert socialLinks object to JSON string
     const socialLinksJson = JSON.stringify(socialLinks);
 
     await client.query(
@@ -233,7 +231,6 @@ app.post('/settings', async (req, res) => {
       [description, socialLinksJson, presence, req.user.id]
     );
     
-    // Notify about the changes
     await axios.post(process.env.DISCORD_WEBHOOK_URL, {
       content: `User ${req.user.username} updated their profile.`
     });
