@@ -99,22 +99,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Routes
-app.get('/', async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.redirect('/login');
-  }
-  try {
-    const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
-    const customUsername = userRes.rows[0]?.custom_username;
-    if (!customUsername) {
-      return res.redirect('/choose-username');
-    } else {
-      return res.redirect(`/profile/${customUsername}`);
-    }
-  } catch (err) {
-    console.error('Database error:', err);
-    return res.status(500).send('Internal Server Error');
-  }
+app.get('/', (req, res) => {
+  res.render('index');
 });
 
 app.get('/login', passport.authenticate('discord'));
@@ -125,10 +111,10 @@ app.get('/discord/callback', passport.authenticate('discord', {
   try {
     const userRes = await client.query('SELECT custom_username FROM users WHERE id = $1', [req.user.id]);
     const customUsername = userRes.rows[0]?.custom_username;
-    if (!customUsername) {
-      return res.redirect('/choose-username');
+    if (customUsername) {
+      return res.redirect(`/profile/${customUsername}`);
     } else {
-      return res.redirect('/');
+      return res.redirect('/choose-username');
     }
   } catch (err) {
     console.error('Database error:', err);
@@ -155,7 +141,7 @@ app.post('/choose-username', async (req, res) => {
       return res.render('choose-username', { error: 'Username already taken' });
     }
     await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);
-    return res.redirect('/');
+    return res.redirect(`/profile/${customUsername}`);
   } catch (err) {
     console.error('Database error:', err);
     return res.status(500).send('Internal Server Error');
@@ -163,10 +149,6 @@ app.post('/choose-username', async (req, res) => {
 });
 
 app.get('/profile/:username', async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.redirect('/login');
-  }
-  
   try {
     const { username } = req.params;
     const { rows } = await client.query('SELECT * FROM users WHERE custom_username = $1', [username]);
@@ -215,6 +197,9 @@ app.post('/settings', async (req, res) => {
     return res.status(500).send('Internal Server Error');
   }
 });
+
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

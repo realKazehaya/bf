@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home</title>
+    <title>MGG - Home</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-5">
-        <h1>Welcome, <%= user.username %>!</h1>
-        <p>Redirecting you to your profile...</p>
+        <h1>Welcome to MGG</h1>
+        <p>Your platform for modern and customizable bio links.</p>
+        <% if (!user) { %>
+            <a href="/login" class="btn btn-primary">Login with Discord</a>
+        <% } else { %>
+            <a href="/profile/<%= user.custom_username || user.id %>" class="btn btn-primary">Go to Profile</a>
+        <% } %>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        window.location.href = '/profile/<%= user.custom_username || user.id %>';
-    </script>
 </body>
 </html>

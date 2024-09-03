@@ -1,43 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Profile - <%= user.username %></title>
+    <title>Profile - <%= user.custom_username %></title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-    <style>
-        .social-icon {
-            font-size: 24px;
-            margin: 10px;
-        }
-    </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h1>Profile of <%= user.username %></h1>
+        <h1>Profile of <%= user.custom_username %></h1>
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title"><%= user.custom_username %></h5>
+                <h5 class="card-title"><%= user.username %></h5>
                 <p class="card-text"><%= user.description || 'No description' %></p>
                 <div class="mt-3">
                     <h6>Social Links:</h6>
                     <ul class="list-unstyled">
-                        <% Object.keys(user.social_links || {}).forEach(platform => { %>
-                            <li>
-                                <a href="<%= user.social_links[platform] %>" target="_blank" class="social-icon">
-                                    <i class="fab fa-<%= platform %>"></i> <%= platform.charAt(0).toUpperCase() + platform.slice(1) %>
-                                </a>
-                            </li>
-                        <% }) %>
+                        <% if (user.social_links) { %>
+                            <% Object.keys(user.social_links).forEach(platform => { %>
+                                <li>
+                                    <a href="<%= user.social_links[platform] %>" target="_blank">
+                                        <%= platform.charAt(0).toUpperCase() + platform.slice(1) %>
+                                    </a>
+                                </li>
+                            <% }) %>
+                        <% } %>
                     </ul>
                 </div>
                 <div class="mt-3">
                     <p>Views: <%= user.views %></p>
+                    <% if (user.discord_id) { %>
+                        <p>Discord ID: <%= user.discord_id %></p>
+                    <% } %>
                 </div>
             </div>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
