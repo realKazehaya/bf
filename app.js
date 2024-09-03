@@ -41,7 +41,8 @@ const initializeDatabase = async () => {
       views INT DEFAULT 0,
       badges TEXT[] DEFAULT '{}',
       presence VARCHAR(255),
-      custom_username VARCHAR(255) UNIQUE
+      custom_username VARCHAR(255) UNIQUE,
+      discord_id VARCHAR(255) UNIQUE
     );
   `;
 
@@ -225,15 +226,22 @@ app.post('/settings', async (req, res) => {
     return res.redirect('/login');
   }
 
-  const { description, socialLinks, presence } = req.body;
+  const { description, socialLinks, discordId } = req.body;
+
   try {
-    const socialLinksJson = JSON.stringify(socialLinks);
+    // Convert socialLinks to JSON object
+    const socialLinksObj = {};
+    for (const link of socialLinks) {
+      if (link.platform && link.url) {
+        socialLinksObj[link.platform] = link.url;
+      }
+    }
 
     await client.query(
-      'UPDATE users SET description = $1, social_links = $2, presence = $3 WHERE id = $4',
-      [description, socialLinksJson, presence, req.user.id]
+      'UPDATE users SET description = $1, social_links = $2, discord_id = $3 WHERE id = $4',
+      [description, JSON.stringify(socialLinksObj), discordId, req.user.id]
     );
-    
+
     await axios.post(process.env.DISCORD_WEBHOOK_URL, {
       content: `User ${req.user.username} updated their profile.`
     });

@@ -9,8 +9,21 @@
         <h1><%= user.custom_username || user.username %>'s Profile</h1>
         <p><strong>Email:</strong> <%= user.email %></p>
         <p><strong>Description:</strong> <%= user.description || 'No description' %></p>
-        <p><strong>Social Links:</strong> <%= user.social_links || 'No links' %></p>
+        <p><strong>Social Links:</strong>
+            <ul>
+                <% if (user.social_links) { %>
+                    <% Object.keys(user.social_links).forEach(platform => { %>
+                        <li><a href="<%= user.social_links[platform] %>"><%= platform %></a></li>
+                    <% }) %>
+                <% } else { %>
+                    <li>No links</li>
+                <% } %>
+            </ul>
+        </p>
         <p><strong>Views:</strong> <%= user.views %></p>
+        <% if (user.discord_id) { %>
+            <p><strong>Discord Presence:</strong> Checking... (Requires additional setup)</p>
+        <% } %>
         <a href="/settings" class="btn btn-primary">Edit Profile</a>
     </div>
 </body>

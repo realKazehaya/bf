@@ -17,8 +17,8 @@
                 <textarea class="form-control" id="socialLinks" name="socialLinks"><%= JSON.stringify(user.social_links) || '' %></textarea>
             </div>
             <div class="form-group">
-                <label for="presence">Presence</label>
-                <input type="text" class="form-control" id="presence" name="presence" value="<%= user.presence || '' %>">
+                <label for="discordId">Discord ID</label>
+                <input type="text" class="form-control" id="discordId" name="discordId" value="<%= user.discord_id || '' %>">
             </div>
             <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
