@@ -75,7 +75,7 @@ passport.use(new DiscordStrategy({
     );
     return done(null, profile);
   } catch (err) {
-    console.error('Database error:', err);
+    console.error('Database error during passport authentication:', err);
     return done(err, null);
   }
 }));
@@ -122,7 +122,7 @@ app.get('/', async (req, res) => {
       return res.redirect(`/profile/${customUsername}`);
     }
   } catch (err) {
-    console.error('Database error:', err);
+    console.error('Database error in / route:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
@@ -142,7 +142,7 @@ app.get('/discord/callback', passport.authenticate('discord', {
       return res.redirect('/');
     }
   } catch (err) {
-    console.error('Database error:', err);
+    console.error('Database error in /discord/callback route:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
@@ -169,7 +169,7 @@ app.post('/choose-username', async (req, res) => {
     await client.query('UPDATE users SET custom_username = $1 WHERE id = $2', [customUsername, req.user.id]);
     return res.redirect('/');
   } catch (err) {
-    console.error('Database error:', err);
+    console.error('Database error in /choose-username route:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
@@ -191,7 +191,7 @@ app.get('/profile/:username', async (req, res) => {
     
     return res.render('profile', { user });
   } catch (err) {
-    console.error('Database error:', err);
+    console.error('Database error in /profile/:username route:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
@@ -237,7 +237,7 @@ app.post('/settings', async (req, res) => {
 
     return res.redirect(`/profile/${req.user.custom_username || req.user.id}`);
   } catch (err) {
-    console.error('Database error:', err);
+    console.error('Database error in /settings route:', err);
     return res.status(500).send('Internal Server Error');
   }
 });
