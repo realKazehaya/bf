@@ -3,6 +3,7 @@
 <head>
     <title><%= user.custom_username || user.username %>'s Profile</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"> <!-- Font Awesome for icons -->
 </head>
 <body>
     <div class="container mt-5">
@@ -13,7 +14,11 @@
             <ul>
                 <% if (user.social_links) { %>
                     <% Object.keys(user.social_links).forEach(platform => { %>
-                        <li><a href="<%= user.social_links[platform] %>"><%= platform %></a></li>
+                        <li>
+                            <a href="<%= user.social_links[platform] %>" target="_blank">
+                                <i class="fab fa-<%= platform %>"></i> <%= platform.charAt(0).toUpperCase() + platform.slice(1) %>
+                            </a>
+                        </li>
                     <% }) %>
                 <% } else { %>
                     <li>No links</li>

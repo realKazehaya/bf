@@ -29,7 +29,7 @@ const redisClient = redis.createClient({
 });
 redisClient.connect().catch(console.error);
 
-// Function to initialize database schema and add the custom_username column
+// Function to initialize database schema
 const initializeDatabase = async () => {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS users (
