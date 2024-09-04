@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Perfil{% endblock %}
+
+{% block content %}
+<div class="edit-profile-container">
+    <h1>Editar Perfil</h1>
+    <form method="POST">
+        <label for="background_image">Imagen de Fondo URL:</label>
+        <input type="text" name="background_image" value="{{ user.background_image }}">
+        
+        <label for="background_music">Música de Fondo URL:</label>
+        <input type="text" name="background_music" value="{{ user.background_music }}">
+        
+        <label for="cursor_style">Cursor Personalizado URL:</label>
+        <input type="text" name="cursor_style" value="{{ user.cursor_style }}">
+        
+        <h3>Redes Sociales</h3>
+        
+        {% for platform in ['facebook', 'instagram', 'spotify', 'discord', 'snapchat', 'roblox'] %}
+            <label for="{{ platform }}">{{ platform.capitalize() }} URL:</label>
+            <input type="text" name="{{ platform }}" value="{{ user.social_links.get(platform) }}">
+        {% endfor %}
+        
+        <button type="submit">Guardar Cambios</button>
+    </form>
+</div>
+{% endblock %}

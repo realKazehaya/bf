@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    body {
+        background-image: url('{{ user.background_image }}');
+        cursor: url('{{ user.cursor_style }}'), auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <img src="{{ user.avatar_url }}" alt="Avatar">
+    <h1>{{ user.username }}</h1>
+    <div class="badges">
+        {% for badge in user.badges %}
+            <img src="{{ url_for('static', filename='images/badges/' + badge + '.png') }}" alt="{{ badge }}">
+        {% endfor %}
+    </div>
+    <div class="social-links">
+        {% for platform, link in user.social_links.items() %}
+            {% if link %}
+                <a href="{{ link }}" target="_blank">{{ platform.capitalize() }}</a>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% if user.background_music %}
+    <audio controls autoplay loop>
+        <source src="{{ user.background_music }}" type="audio/mpeg">
+        Tu navegador no soporta la reproducción de audio.
+    </audio>
+    {% endif %}
+</div>
+{% endblock %}
