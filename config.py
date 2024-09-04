@@ -1,9 +1,13 @@
 import os
+from redis import Redis  # Asegúrate de que redis está importado
 
 class Config:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
     SESSION_TYPE = 'redis'
-    SESSION_REDIS = os.environ.get('REDIS_URL')
+    
+    # Crear una instancia de Redis con la URL de Redis
+    SESSION_REDIS = Redis.from_url(os.environ.get('REDIS_URL'))
+    
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DISCORD_CLIENT_ID = os.environ.get('DISCORD_CLIENT_ID')
