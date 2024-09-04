@@ -1,4 +1,3 @@
-import os  # Asegúrate de importar el módulo os
 from flask import Flask
 from flask_session import Session
 from config import Config
@@ -6,6 +5,7 @@ from models.user import db
 from routes.auth import auth_bp
 from routes.profile import profile_bp
 from routes.badge import badge_bp
+import os  # Asegúrate de importar el módulo os
 
 def create_app():
     app = Flask(__name__)
@@ -26,8 +26,13 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+    # Ruta principal
+    @app.route('/')
+    def index():
+        return 'Hello, World!'
+
     return app
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
