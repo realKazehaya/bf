@@ -45,4 +45,14 @@ def callback():
 
     user = User.query.filter_by(discord_id=discord_id).first()
     if not user:
-        user = User(discord_id=discord_id, username=usern
+        user = User(discord_id=discord_id, username=username, avatar_url=avatar_url)
+        db.session.add(user)
+        db.session.commit()
+
+    session['user_id'] = user.id
+    return redirect(url_for('profile.dashboard'))
+
+@auth_bp.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('auth.login'))
