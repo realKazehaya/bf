@@ -1,3 +1,4 @@
+import os  # Asegúrate de importar os
 from flask import Flask, redirect, url_for
 from flask_session import Session
 from models.user import db
@@ -32,5 +33,6 @@ def create_app():
     return app
 
 if __name__ == "__main__":
+    import os  # Asegúrate de tener esta línea para importar os
     port = int(os.environ.get("PORT", 3000))
     app.run(host="0.0.0.0", port=port)
