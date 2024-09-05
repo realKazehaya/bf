@@ -1,28 +1,16 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import JSON
 
 db = SQLAlchemy()
 
 class User(db.Model):
-    __tablename__ = 'users'
-
     id = db.Column(db.Integer, primary_key=True)
     discord_id = db.Column(db.String(50), unique=True, nullable=False)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    avatar_url = db.Column(db.String(200))
-    social_links = db.Column(db.JSON, nullable=False, default={})
-    background_image = db.Column(db.String(200))
-    background_music = db.Column(db.String(200))
-    cursor_style = db.Column(db.String(100))
-    badges = db.Column(db.JSON, nullable=False, default=[])
+    username = db.Column(db.String(100), nullable=False)
+    avatar_url = db.Column(db.String(200), nullable=True)
+    badges = db.Column(JSON, default=[])
     visit_count = db.Column(db.Integer, default=0)
-
-    def __init__(self, discord_id, username, avatar_url, background_image=None, background_music=None, cursor_style=None):
-        self.discord_id = discord_id
-        self.username = username
-        self.avatar_url = avatar_url
-        self.social_links = {}
-        self.badges = []
-        self.background_image = background_image
-        self.background_music = background_music
-        self.cursor_style = cursor_style
-        self.visit_count = 0
+    background_image = db.Column(db.String(200), nullable=True)
+    background_music = db.Column(db.String(200), nullable=True)
+    cursor_style = db.Column(db.String(100), nullable=True)
+    social_links = db.Column(JSON, default={})

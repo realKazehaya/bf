@@ -2,12 +2,21 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="dashboard-container">
-    <h1>Bienvenido, {{ user.username }}</h1>
-    <img src="{{ user.avatar_url }}" alt="Avatar">
-    <p>Visitas a tu perfil: {{ user.visit_count }}</p>
-    <a href="{{ url_for('profile.edit_profile') }}">Editar Perfil</a>
-    <a href="{{ url_for('auth.logout') }}">Cerrar Sesión</a>
+<div class="dashboard-header">
+    <h2>Bienvenido, {{ user.username }}</h2>
+</div>
+
+<div class="dashboard-content">
+    <div>
+        <p>Memes subidos: {{ user.memes_count }}</p>
+    </div>
+    <div>
+        <p>Total de Likes: {{ user.total_likes }}</p>
+    </div>
 </div>
 {% endblock %}

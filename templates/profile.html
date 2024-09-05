@@ -1,35 +1,37 @@
 {% extends 'base.html' %}
 
-{% block head %}
-<style>
-    body {
-        background-image: url('{{ user.background_image }}');
-        cursor: url('{{ user.cursor_style }}'), auto;
-    }
-</style>
+{% block title %}Perfil de {{ user.username }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/profile.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="profile-container">
-    <img src="{{ user.avatar_url }}" alt="Avatar">
-    <h1>{{ user.username }}</h1>
-    <div class="badges">
-        {% for badge in user.badges %}
-            <img src="{{ url_for('static', filename='images/badges/' + badge + '.png') }}" alt="{{ badge }}">
-        {% endfor %}
-    </div>
+    <img class="avatar" src="{{ user.avatar_url }}" alt="Avatar de {{ user.username }}">
+    <h2>{{ user.username }}</h2>
+
+    <!-- Enlaces sociales -->
     <div class="social-links">
-        {% for platform, link in user.social_links.items() %}
-            {% if link %}
-                <a href="{{ link }}" target="_blank">{{ platform.capitalize() }}</a>
+        <ul>
+            {% if user.social_links.facebook %}
+            <li><a href="{{ user.social_links.facebook }}">Facebook</a></li>
             {% endif %}
+            {% if user.social_links.instagram %}
+            <li><a href="{{ user.social_links.instagram }}">Instagram</a></li>
+            {% endif %}
+            <!-- Añade más enlaces sociales según sea necesario -->
+        </ul>
+    </div>
+
+    <!-- Memes subidos -->
+    <h3>Memes Subidos:</h3>
+    <div class="memes-list">
+        {% for meme in user.memes %}
+        <div class="meme">
+            <img src="{{ meme.url }}" alt="Meme de {{ user.username }}">
+        </div>
         {% endfor %}
     </div>
-    {% if user.background_music %}
-    <audio controls autoplay loop>
-        <source src="{{ user.background_music }}" type="audio/mpeg">
-        Tu navegador no soporta la reproducción de audio.
-    </audio>
-    {% endif %}
 </div>
 {% endblock %}

@@ -42,7 +42,6 @@ def edit_profile():
             'discord': request.form.get('discord'),
             'snapchat': request.form.get('snapchat'),
             'roblox': request.form.get('roblox'),
-            # Añade más según sea necesario
         }
         user.social_links = social_links
         db.session.commit()

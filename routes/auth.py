@@ -28,16 +28,13 @@ def callback():
         'redirect_uri': Config.DISCORD_REDIRECT_URI,
         'scope': 'identify'
     }
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     response = requests.post(f"{Config.DISCORD_API_BASE_URL}/oauth2/token", data=data, headers=headers)
     credentials = response.json()
-    access_token = credentials.get('access_token')
 
     user_response = requests.get(
         f"{Config.DISCORD_API_BASE_URL}/users/@me",
-        headers={"Authorization": f"Bearer {access_token}"}
+        headers={"Authorization": f"Bearer {credentials.get('access_token')}"}
     )
     user_data = user_response.json()
 
@@ -48,15 +45,4 @@ def callback():
 
     user = User.query.filter_by(discord_id=discord_id).first()
     if not user:
-        user = User(discord_id=discord_id, username=username, avatar_url=avatar_url)
-        db.session.add(user)
-        db.session.commit()
-
-    session['user_id'] = user.id
-
-    return redirect(url_for('profile.dashboard'))
-
-@auth_bp.route('/logout')
-def logout():
-    session.pop('user_id', None)
-    return redirect(url_for('auth.login'))
+        user = User(discord_id=discord_id, username=usern

@@ -1,10 +1,6 @@
-Flask==2.2.5
-Flask-Session==0.3.2
-redis==4.1.0
-requests==2.26.0
-SQLAlchemy==1.4.22
-psycopg2-binary==2.9.6
-discord.py==1.7.3
-python-dotenv==0.19.0
-Werkzeug==3.0.4
-Flask-SQLAlchemy==3.0.5
+Flask
+Flask-SQLAlchemy
+Flask-Session
+requests
+psycopg2-binary
+gunicorn

@@ -1,7 +1,5 @@
 from flask import Blueprint, request, jsonify
 from models.user import db, User
-from config import Config
-import requests
 
 badge_bp = Blueprint('badge', __name__)
 

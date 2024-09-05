@@ -2,27 +2,33 @@
 
 {% block title %}Editar Perfil{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/profile.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="edit-profile-container">
-    <h1>Editar Perfil</h1>
-    <form method="POST">
-        <label for="background_image">Imagen de Fondo URL:</label>
-        <input type="text" name="background_image" value="{{ user.background_image }}">
-        
-        <label for="background_music">Música de Fondo URL:</label>
-        <input type="text" name="background_music" value="{{ user.background_music }}">
-        
-        <label for="cursor_style">Cursor Personalizado URL:</label>
-        <input type="text" name="cursor_style" value="{{ user.cursor_style }}">
-        
-        <h3>Redes Sociales</h3>
-        
-        {% for platform in ['facebook', 'instagram', 'spotify', 'discord', 'snapchat', 'roblox'] %}
-            <label for="{{ platform }}">{{ platform.capitalize() }} URL:</label>
-            <input type="text" name="{{ platform }}" value="{{ user.social_links.get(platform) }}">
-        {% endfor %}
-        
-        <button type="submit">Guardar Cambios</button>
+<div class="profile-container">
+    <h2>Editar Perfil</h2>
+
+    <form action="{{ url_for('profile.edit_profile') }}" method="POST">
+        <label for="background_image">URL de Imagen de Fondo</label>
+        <input type="text" id="background_image" name="background_image" value="{{ user.background_image }}" class="form-control">
+
+        <label for="background_music">URL de Música de Fondo</label>
+        <input type="text" id="background_music" name="background_music" value="{{ user.background_music }}" class="form-control">
+
+        <label for="cursor_style">Estilo del Cursor</label>
+        <input type="text" id="cursor_style" name="cursor_style" value="{{ user.cursor_style }}" class="form-control">
+
+        <label for="facebook">Facebook</label>
+        <input type="text" id="facebook" name="facebook" value="{{ user.social_links.facebook }}" class="form-control">
+
+        <label for="instagram">Instagram</label>
+        <input type="text" id="instagram" name="instagram" value="{{ user.social_links.instagram }}" class="form-control">
+
+        <!-- Añade más campos según sea necesario -->
+
+        <button type="submit" class="button">Guardar Cambios</button>
     </form>
 </div>
 {% endblock %}
