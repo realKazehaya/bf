@@ -1,38 +1,96 @@
 import os
-from flask import Flask, redirect, url_for
-from flask_session import Session
-from models.user import db
-from routes.auth import auth_bp
-from routes.profile import profile_bp
-from routes.badge import badge_bp
-from config import Config
+from flask import Flask, render_template, request, redirect, session, url_for
+import sqlite3
+import requests
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
 
-    # Inicializar la base de datos
-    db.init_app(app)
+# Conexión a la base de datos
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
-    # Configurar las sesiones
-    Session(app)
+# Ruta principal - Página de inicio
+@app.route('/')
+def index():
+    if 'roblox_username' in session:
+        return redirect(url_for('profile'))
+    return render_template('index.html')
 
-    # Registrar los Blueprints
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(profile_bp)
-    app.register_blueprint(badge_bp)
+# Ruta de inicio de sesión
+@app.route('/login', methods=['POST'])
+def login():
+    roblox_username = request.form['username']
+    avatar_url = get_roblox_avatar_url(roblox_username)
+    
+    # Guardar datos de sesión
+    session['roblox_username'] = roblox_username
+    session['avatar_url'] = avatar_url
+    
+    return redirect(url_for('profile'))
 
-    # Crear las tablas en la base de datos
-    with app.app_context():
-        db.create_all()
+# Función para obtener el avatar de Roblox
+def get_roblox_avatar_url(username):
+    roblox_api_url = f'https://api.roblox.com/users/get-by-username?username={username}'
+    response = requests.get(roblox_api_url)
+    data = response.json()
+    if 'Id' in data:
+        user_id = data['Id']
+        avatar_url = f'https://www.roblox.com/headshot-thumbnail/image?userId={user_id}&width=420&height=420&format=png'
+        return avatar_url
+    return None
 
-    @app.route('/')
-    def index():
-        return redirect(url_for('profile.dashboard'))
+# Página de perfil del usuario
+@app.route('/profile')
+def profile():
+    if 'roblox_username' in session:
+        roblox_username = session['roblox_username']
+        avatar_url = session.get('avatar_url')
 
-    return app
+        # Consultar los Robux ganados
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
+        robux_earned = user['robux_earned'] if user else 0
+        conn.close()
 
-if __name__ == "__main__":
-    app = create_app()  # Crear la instancia de la aplicación
-    port = int(os.environ.get("PORT", 3000))
-    app.run(host="0.0.0.0", port=port)
+        return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, robux_earned=robux_earned)
+    return redirect(url_for('index'))
+
+# Página de encuestas (Surveys)
+@app.route('/surveys')
+def surveys():
+    if 'roblox_username' in session:
+        return render_template('surveys.html')
+    return redirect(url_for('index'))
+
+# Página para retirar Robux (Withdraw)
+@app.route('/withdraw')
+def withdraw():
+    if 'roblox_username' in session:
+        return render_template('withdraw.html')
+    return redirect(url_for('index'))
+
+# Ruta de soporte
+@app.route('/support')
+def support():
+    # Redirigir al enlace de Discord
+    return redirect("https://discord.gg/your-discord-group")
+
+# Crear la base de datos y tabla
+def init_db():
+    conn = get_db_connection()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            roblox_username TEXT UNIQUE NOT NULL,
+            robux_earned INTEGER DEFAULT 0
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+if __name__ == '__main__':
+    init_db()
+    app.run(host='0.0.0.0', port=5000)

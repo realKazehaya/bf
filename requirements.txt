@@ -1,6 +1,6 @@
-Flask
-Flask-SQLAlchemy
-Flask-Session
-requests
-psycopg2-binary
-gunicorn
+Flask==2.3.2
+requests==2.31.0
+Flask-SQLAlchemy==3.0.5 
+Flask-Session==0.4.0     
+discord.py==2.3.2        
+gunicorn==20.1.0         
