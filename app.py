@@ -77,6 +77,13 @@ def profile():
         return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, robux_earned=robux_earned)
     return redirect(url_for('index'))
 
+# Ruta de encuestas
+@app.route('/surveys')
+def surveys():
+    if 'roblox_username' not in session:
+        return redirect(url_for('index'))
+    return render_template('surveys.html')
+
 # Ruta de soporte
 @app.route('/support')
 def support():
