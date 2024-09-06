@@ -66,22 +66,25 @@ def profile():
 # Página de encuestas (Surveys)
 @app.route('/surveys')
 def surveys():
-    if 'roblox_username' in session:
-        return render_template('surveys.html')
-    return redirect(url_for('index'))
+    return render_template('surveys.html')
 
 # Página para retirar Robux (Withdraw)
 @app.route('/withdraw')
 def withdraw():
-    if 'roblox_username' in session:
-        return render_template('withdraw.html')
-    return redirect(url_for('index'))
+    return render_template('withdraw.html')
 
 # Ruta de soporte
 @app.route('/support')
 def support():
     # Redirigir al enlace de Discord
     return redirect("https://discord.gg/your-discord-group")
+
+# Ruta de cierre de sesión
+@app.route('/logout')
+def logout():
+    session.pop('roblox_username', None)
+    session.pop('avatar_url', None)
+    return redirect(url_for('index'))
 
 # Crear la base de datos y tabla
 def init_db():

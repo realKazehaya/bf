@@ -5,8 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de {{ username }}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .header {
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header .nav-link {
+            color: #333;
+        }
+        .header .nav-link:hover {
+            color: #007bff;
+        }
+        .header .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light header">
+        <div class="container">
+            <a class="navbar-brand" href="/">Mi Web</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fa-solid fa-house"></i> Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/surveys"><i class="fa-solid fa-poll"></i> Encuestas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/withdraw"><i class="fa-solid fa-money-bill"></i> Retirar Robux</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/support"><i class="fa-solid fa-life-ring"></i> Soporte</a>
+                    </li>
+                    {% if 'roblox_username' in session %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/profile"><i class="fa-solid fa-user"></i> Mi Perfil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout"><i class="fa-solid fa-sign-out-alt"></i> Cerrar Sesión</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login"><i class="fa-solid fa-sign-in-alt"></i> Iniciar Sesión</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
     <div class="container mt-5">
         <h1>Perfil de {{ username }}</h1>
         <img src="{{ avatar_url }}" alt="Avatar" class="img-thumbnail" width="150">
