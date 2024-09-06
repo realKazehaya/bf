@@ -34,12 +34,17 @@ def login():
 # Función para obtener el avatar de Roblox
 def get_roblox_avatar_url(username):
     roblox_api_url = f'https://api.roblox.com/users/get-by-username?username={username}'
-    response = requests.get(roblox_api_url)
-    data = response.json()
-    if 'Id' in data:
-        user_id = data['Id']
-        avatar_url = f'https://www.roblox.com/headshot-thumbnail/image?userId={user_id}&width=420&height=420&format=png'
-        return avatar_url
+    try:
+        response = requests.get(roblox_api_url)
+        response.raise_for_status()  # Verifica que la solicitud fue exitosa
+        data = response.json()
+        if 'Id' in data:
+            user_id = data['Id']
+            avatar_url = f'https://www.roblox.com/headshot-thumbnail/image?userId={user_id}&width=420&height=420&format=png'
+            return avatar_url
+    except requests.RequestException as e:
+        # Imprime el error y maneja el problema de conexión
+        print(f"Error fetching Roblox avatar: {e}")
     return None
 
 # Página de perfil del usuario
