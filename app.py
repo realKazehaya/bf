@@ -39,11 +39,15 @@ def get_roblox_avatar_url(username):
         response.raise_for_status()
         data = response.json()
 
+        print(f"Datos de la API de Roblox: {data}")  # Depuración para ver la respuesta de la API
+
         # Verificar si se encontró un usuario
         if data['data']:
             user_id = data['data'][0]['id']
             avatar_url = f'https://www.roblox.com/headshot-thumbnail/image?userId={user_id}&width=150&height=150&format=png'
             return avatar_url
+        else:
+            print("Usuario no encontrado en la API de Roblox.")
     except requests.RequestException as e:
         print(f"Error fetching Roblox avatar: {e}")
     return None

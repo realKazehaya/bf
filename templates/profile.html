@@ -47,7 +47,7 @@
                             <a class="nav-link" href="/profile"><i class="fa-solid fa-user"></i> Mi Perfil</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('logout') }}"><i class="fa-solid fa-sign-out-alt"></i> Cerrar Sesión</a>
+                            <a class="nav-link" href="/logout"><i class="fa-solid fa-sign-out-alt"></i> Cerrar Sesión</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
@@ -61,8 +61,11 @@
     
     <div class="container mt-5">
         <h1>Perfil de {{ username }}</h1>
-        <p>Avatar URL: {{ avatar_url }}</p> <!-- Depuración para ver la URL del avatar -->
-        <img src="{{ avatar_url }}" alt="Avatar" class="img-thumbnail" width="150">
+        {% if avatar_url %}
+            <img src="{{ avatar_url }}" alt="Avatar" class="img-thumbnail" width="150">
+        {% else %}
+            <p>No se pudo cargar el avatar.</p>
+        {% endif %}
         <p>Robux ganados: {{ robux_earned }}</p>
         <a href="/withdraw" class="btn btn-primary">Retirar Robux</a>
     </div>
