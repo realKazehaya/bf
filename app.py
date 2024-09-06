@@ -69,6 +69,13 @@ def profile():
 def support():
     return redirect("https://discord.gg/your-discord-group")
 
+@app.route('/logout')
+def logout():
+    # Limpiar la sesión
+    session.clear()
+    # Redirigir al usuario a la página principal
+    return redirect(url_for('index'))
+
 # Crear la base de datos y tabla
 def init_db():
     conn = get_db_connection()
