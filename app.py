@@ -33,17 +33,18 @@ def login():
 
 # Función para obtener el avatar de Roblox
 def get_roblox_avatar_url(username):
-    roblox_api_url = f'https://api.roblox.com/users/get-by-username?username={username}'
+    roblox_api_url = f'https://users.roblox.com/v1/users/search?keyword={username}'
     try:
         response = requests.get(roblox_api_url)
-        response.raise_for_status()  # Verifica que la solicitud fue exitosa
+        response.raise_for_status()
         data = response.json()
-        if 'Id' in data:
-            user_id = data['Id']
-            avatar_url = f'https://www.roblox.com/headshot-thumbnail/image?userId={user_id}&width=420&height=420&format=png'
+
+        # Verificar si se encontró un usuario
+        if data['data']:
+            user_id = data['data'][0]['id']
+            avatar_url = f'https://www.roblox.com/headshot-thumbnail/image?userId={user_id}&width=150&height=150&format=png'
             return avatar_url
     except requests.RequestException as e:
-        # Imprime el error y maneja el problema de conexión
         print(f"Error fetching Roblox avatar: {e}")
     return None
 
@@ -63,28 +64,10 @@ def profile():
         return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, robux_earned=robux_earned)
     return redirect(url_for('index'))
 
-# Página de encuestas (Surveys)
-@app.route('/surveys')
-def surveys():
-    return render_template('surveys.html')
-
-# Página para retirar Robux (Withdraw)
-@app.route('/withdraw')
-def withdraw():
-    return render_template('withdraw.html')
-
 # Ruta de soporte
 @app.route('/support')
 def support():
-    # Redirigir al enlace de Discord
     return redirect("https://discord.gg/your-discord-group")
-
-# Ruta de cierre de sesión
-@app.route('/logout')
-def logout():
-    session.pop('roblox_username', None)
-    session.pop('avatar_url', None)
-    return redirect(url_for('index'))
 
 # Crear la base de datos y tabla
 def init_db():

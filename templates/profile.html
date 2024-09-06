@@ -61,6 +61,7 @@
     
     <div class="container mt-5">
         <h1>Perfil de {{ username }}</h1>
+        <p>Avatar URL: {{ avatar_url }}</p> <!-- Depuración para ver la URL del avatar -->
         <img src="{{ avatar_url }}" alt="Avatar" class="img-thumbnail" width="150">
         <p>Robux ganados: {{ robux_earned }}</p>
         <a href="/withdraw" class="btn btn-primary">Retirar Robux</a>
