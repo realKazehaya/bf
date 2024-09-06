@@ -65,9 +65,14 @@ def profile():
 
         # Consultar los Robux ganados
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
-        robux_earned = user['robux_earned'] if user else 0
-        conn.close()
+        try:
+            user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
+            robux_earned = user['robux_earned'] if user else 0
+        except sqlite3.OperationalError as e:
+            print(f"Error accessing database: {e}")
+            robux_earned = 0
+        finally:
+            conn.close()
 
         return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, robux_earned=robux_earned)
     return redirect(url_for('index'))
@@ -86,16 +91,20 @@ def logout():
 
 # Crear la base de datos y tabla
 def init_db():
-    conn = get_db_connection()
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            roblox_username TEXT UNIQUE NOT NULL,
-            robux_earned INTEGER DEFAULT 0
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                roblox_username TEXT UNIQUE NOT NULL,
+                robux_earned INTEGER DEFAULT 0
+            )
+        ''')
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"Error initializing database: {e}")
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     init_db()
