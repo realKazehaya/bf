@@ -31,7 +31,7 @@ def login():
     
     return redirect(url_for('profile'))
 
-# Función para obtener el avatar de Roblox
+# Función para obtener el avatar de Roblox con la API actualizada
 def get_roblox_avatar_url(username):
     roblox_api_url = f'https://users.roblox.com/v1/users/search?keyword={username}'
     try:
@@ -39,13 +39,17 @@ def get_roblox_avatar_url(username):
         response.raise_for_status()
         data = response.json()
 
-        print(f"Datos de la API de Roblox: {data}")  # Depuración para ver la respuesta de la API
-
         # Verificar si se encontró un usuario
         if data['data']:
             user_id = data['data'][0]['id']
-            avatar_url = f'https://www.roblox.com/headshot-thumbnail/image?userId={user_id}&width=150&height=150&format=png'
-            return avatar_url
+            # Nueva API para obtener el avatar
+            thumbnail_url = f'https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={user_id}&size=150x150&format=Png&isCircular=false'
+            thumbnail_response = requests.get(thumbnail_url)
+            thumbnail_data = thumbnail_response.json()
+
+            if thumbnail_data['data']:
+                avatar_url = thumbnail_data['data'][0]['imageUrl']
+                return avatar_url
         else:
             print("Usuario no encontrado en la API de Roblox.")
     except requests.RequestException as e:
