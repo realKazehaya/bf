@@ -8,16 +8,19 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <!-- Header -->
     <header>
         <div class="container">
-            <h1>Welcome to Surveys</h1>
             <nav>
                 <ul>
-                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
-                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <li><a href="{{ url_for('profile') }}">PROFILE</a></li>
+                    <li><a href="#">SURVEYS</a></li>
+                    <li><a href="{{ url_for('withdraw') }}">WITHDRAW</a></li>
+                    <li><a href="{{ url_for('ranking') }}">RANKING</a></li>
+                    <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                    <li><a href="{{ url_for('support') }}">SUPPORT</a></li>
                 </ul>
             </nav>
+            <h1>Welcome to Surveys</h1>
         </div>
     </header>
 

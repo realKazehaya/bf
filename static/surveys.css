@@ -1,76 +1,84 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+    background-color: #f4f4f4;
 }
 
 header {
     background-color: #333;
     color: #fff;
-    padding: 10px 0;
+    padding: 1em;
     text-align: center;
-}
-
-header .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
 }
 
 header h1 {
     margin: 0;
-    font-size: 24px;
 }
 
-header nav ul {
+nav ul {
     list-style: none;
+    margin: 0;
     padding: 0;
+    display: flex;
+    justify-content: space-between;
 }
 
-header nav ul li {
-    display: inline;
-    margin: 0 10px;
+nav li {
+    margin-right: 20px;
 }
 
-header nav ul li a {
+nav a {
     color: #fff;
     text-decoration: none;
 }
 
-header nav ul li a:hover {
-    text-decoration: underline;
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2em;
 }
 
-main {
-    text-align: center;
-    padding: 20px;
+.content {
+    background-color: #fff;
+    padding: 2em;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .offer-buttons {
-    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
 .offer-buttons button {
-    background-color: #ddd;
+    background-color: #333;
+    color: #fff;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin: 0 5px;
     padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
 .offer-buttons button.active {
-    background-color: #007bff;
-    color: #fff;
+    background-color: #555;
 }
 
-.offers-container {
-    margin-top: 20px;
-}
-
-iframe {
+#offers-container {
     width: 100%;
+}
+
+#offer-iframe {
     border: none;
-    height: 2000px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    main {
+        padding: 1em;
+    }
+
+    .content {
+        padding: 1em;
+    }
 }
