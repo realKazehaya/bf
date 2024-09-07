@@ -150,32 +150,5 @@ def withdraw():
     
     return render_template('withdraw.html')
 
-# Crear la base de datos y tabla
-def init_db():
-    conn = get_db_connection()
-    if conn:
-        try:
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    roblox_username TEXT UNIQUE NOT NULL,
-                    robux_earned INTEGER DEFAULT 0
-                )
-            ''')
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS withdrawals (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    roblox_username TEXT NOT NULL,
-                    amount INTEGER NOT NULL,
-                    date TEXT NOT NULL
-                )
-            ''')
-            conn.commit()
-        except sqlite3.Error as e:
-            print(f"Error initializing database: {e}")
-        finally:
-            conn.close()
-
 if __name__ == '__main__':
-    init_db()  # Asegura que las tablas se creen cuando inicie la app
     app.run(debug=True, host='0.0.0.0', port=5000)
