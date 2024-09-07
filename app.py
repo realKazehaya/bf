@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 import sqlite3
 import requests
 import json
@@ -10,9 +10,13 @@ app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
 
 # Conexión a la base de datos
 def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        conn = sqlite3.connect('database.db')
+        conn.row_factory = sqlite3.Row
+        return conn
+    except sqlite3.Error as e:
+        print(f"Error connecting to database: {e}")
+        return None
 
 # Ruta principal - Página de inicio
 @app.route('/')
@@ -26,6 +30,10 @@ def index():
 def login():
     roblox_username = request.form['username']
     avatar_url = get_roblox_avatar_url(roblox_username)
+
+    if avatar_url is None:
+        flash('Error al obtener el avatar de Roblox. Intenta nuevamente.', 'error')
+        return redirect(url_for('index'))
     
     # Guardar datos de sesión
     session['roblox_username'] = roblox_username
@@ -33,12 +41,17 @@ def login():
     
     # Crear el usuario si no existe
     conn = get_db_connection()
-    conn.execute('''
-        INSERT OR IGNORE INTO users (roblox_username, robux_earned) 
-        VALUES (?, 0)
-    ''', (roblox_username,))
-    conn.commit()
-    conn.close()
+    if conn:
+        try:
+            conn.execute('''
+                INSERT OR IGNORE INTO users (roblox_username, robux_earned) 
+                VALUES (?, 0)
+            ''', (roblox_username,))
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error inserting user: {e}")
+        finally:
+            conn.close()
     
     return redirect(url_for('profile'))
 
@@ -73,13 +86,15 @@ def profile():
         avatar_url = session.get('avatar_url')
 
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
-        withdrawals = conn.execute('SELECT * FROM withdrawals WHERE roblox_username = ?', (roblox_username,)).fetchall()
-        conn.close()
+        if conn:
+            user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
+            withdrawals = conn.execute('SELECT * FROM withdrawals WHERE roblox_username = ?', (roblox_username,)).fetchall()
+            conn.close()
 
-        balance = user['robux_earned'] if user else 0
+            balance = user['robux_earned'] if user else 0
 
-        return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, balance=balance, withdrawals=withdrawals)
+            return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, balance=balance, withdrawals=withdrawals)
+    
     return redirect(url_for('index'))
 
 # Página de retiro de Robux
@@ -90,58 +105,66 @@ def withdraw():
     
     if request.method == 'POST':
         roblox_username = session['roblox_username']
-        amount = int(request.form['amount'])
+        try:
+            amount = int(request.form['amount'])
+        except ValueError:
+            return "Cantidad inválida", 400
 
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
+        if conn:
+            user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
 
-        if user and user['robux_earned'] >= amount:
-            # Restar la cantidad del balance
-            new_balance = user['robux_earned'] - amount
-            conn.execute('UPDATE users SET robux_earned = ? WHERE roblox_username = ?', (new_balance, roblox_username))
-            conn.execute('INSERT INTO withdrawals (roblox_username, amount, date) VALUES (?, ?, ?)', 
-                         (roblox_username, amount, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-            conn.commit()
-            conn.close()
+            if user and user['robux_earned'] >= amount:
+                # Restar la cantidad del balance
+                new_balance = user['robux_earned'] - amount
+                conn.execute('UPDATE users SET robux_earned = ? WHERE roblox_username = ?', (new_balance, roblox_username))
+                conn.execute('INSERT INTO withdrawals (roblox_username, amount, date) VALUES (?, ?, ?)', 
+                            (roblox_username, amount, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                conn.commit()
+                conn.close()
 
-            # Enviar a la webhook de Discord
-            webhook_url = 'https://discord.com/api/webhooks/1281796784053813268/QL9Uu5Y3fZ_PXDQ0iCA337Bg-cLDxs6tCrU7IG-wrb42cibPXNPDRLcnBumU5FsMgUp0'
-            data = {
-                "content": f"Withdraw Request\nUSERNAME: {roblox_username}\nR$: {amount}\nDATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-            }
-            requests.post(webhook_url, data=json.dumps(data), headers={'Content-Type': 'application/json'})
-
-            return redirect(url_for('profile'))
-        else:
-            return "Fondos insuficientes", 400
+                # Enviar a la webhook de Discord
+                webhook_url = 'https://discord.com/api/webhooks/1281796784053813268/QL9Uu5Y3fZ_PXDQ0iCA337Bg-cLDxs6tCrU7IG-wrb42cibPXNPDRLcnBumU5FsMgUp0'
+                data = {
+                    "content": f"Withdraw Request\nUSERNAME: {roblox_username}\nR$: {amount}\nDATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                }
+                discord_response = requests.post(webhook_url, data=json.dumps(data), headers={'Content-Type': 'application/json'})
+                
+                if discord_response.status_code != 204:
+                    print(f"Error sending to Discord webhook: {discord_response.status_code}, {discord_response.text}")
+                
+                return redirect(url_for('profile'))
+            else:
+                return "Fondos insuficientes", 400
     
     return render_template('withdraw.html')
 
 # Crear la base de datos y tabla
 def init_db():
-    try:
-        conn = get_db_connection()
-        conn.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                roblox_username TEXT UNIQUE NOT NULL,
-                robux_earned INTEGER DEFAULT 0
-            )
-        ''')
-        conn.execute('''
-            CREATE TABLE IF NOT EXISTS withdrawals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                roblox_username TEXT NOT NULL,
-                amount INTEGER NOT NULL,
-                date TEXT NOT NULL
-            )
-        ''')
-        conn.commit()
-    except sqlite3.Error as e:
-        print(f"Error initializing database: {e}")
-    finally:
-        conn.close()
+    conn = get_db_connection()
+    if conn:
+        try:
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    roblox_username TEXT UNIQUE NOT NULL,
+                    robux_earned INTEGER DEFAULT 0
+                )
+            ''')
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS withdrawals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    roblox_username TEXT NOT NULL,
+                    amount INTEGER NOT NULL,
+                    date TEXT NOT NULL
+                )
+            ''')
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error initializing database: {e}")
+        finally:
+            conn.close()
 
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
