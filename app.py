@@ -22,8 +22,8 @@ def get_db_connection():
 @app.route('/')
 def index():
     if 'roblox_username' in session:
-        return redirect(url_for('profile'))
-    return render_template('index.html')
+        return render_template('index.html', logged_in=True)
+    return render_template('index.html', logged_in=False)
 
 # Ruta de inicio de sesión
 @app.route('/login', methods=['POST'])
@@ -149,6 +149,13 @@ def withdraw():
             return redirect(url_for('profile'))
     
     return render_template('withdraw.html')
+
+# Página de encuestas
+@app.route('/surveys')
+def surveys():
+    if 'roblox_username' not in session:
+        return redirect(url_for('index'))
+    return render_template('surveys.html')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
