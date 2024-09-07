@@ -66,8 +66,18 @@
         {% else %}
             <p>No se pudo cargar el avatar.</p>
         {% endif %}
-        <p>Robux ganados: {{ robux_earned }}</p>
-        <a href="/withdraw" class="btn btn-primary">Retirar Robux</a>
+        <p>Balance: R$ {{ balance }}</p>
+
+        <h3>Recently Withdrawals</h3>
+        {% if withdrawals %}
+            <ul>
+                {% for withdraw in withdrawals %}
+                    <li>R$: {{ withdraw.amount }} - Fecha: {{ withdraw.date }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No se han realizado retiros aún.</p>
+        {% endif %}
     </div>
 </body>
 </html>

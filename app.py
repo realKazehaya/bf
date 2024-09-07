@@ -2,6 +2,8 @@ import os
 from flask import Flask, render_template, request, redirect, session, url_for
 import sqlite3
 import requests
+import json
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
@@ -29,9 +31,18 @@ def login():
     session['roblox_username'] = roblox_username
     session['avatar_url'] = avatar_url
     
+    # Crear el usuario si no existe
+    conn = get_db_connection()
+    conn.execute('''
+        INSERT OR IGNORE INTO users (roblox_username, robux_earned) 
+        VALUES (?, 0)
+    ''', (roblox_username,))
+    conn.commit()
+    conn.close()
+    
     return redirect(url_for('profile'))
 
-# Función para obtener el avatar de Roblox con la API actualizada
+# Función para obtener el avatar de Roblox
 def get_roblox_avatar_url(username):
     roblox_api_url = f'https://users.roblox.com/v1/users/search?keyword={username}'
     try:
@@ -39,10 +50,8 @@ def get_roblox_avatar_url(username):
         response.raise_for_status()
         data = response.json()
 
-        # Verificar si se encontró un usuario
         if data['data']:
             user_id = data['data'][0]['id']
-            # Nueva API para obtener el avatar
             thumbnail_url = f'https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={user_id}&size=150x150&format=Png&isCircular=false'
             thumbnail_response = requests.get(thumbnail_url)
             thumbnail_data = thumbnail_response.json()
@@ -63,38 +72,50 @@ def profile():
         roblox_username = session['roblox_username']
         avatar_url = session.get('avatar_url')
 
-        # Consultar los Robux ganados
         conn = get_db_connection()
-        try:
-            user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
-            robux_earned = user['robux_earned'] if user else 0
-        except sqlite3.OperationalError as e:
-            print(f"Error accessing database: {e}")
-            robux_earned = 0
-        finally:
-            conn.close()
+        user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
+        withdrawals = conn.execute('SELECT * FROM withdrawals WHERE roblox_username = ?', (roblox_username,)).fetchall()
+        conn.close()
 
-        return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, robux_earned=robux_earned)
+        balance = user['robux_earned'] if user else 0
+
+        return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, balance=balance, withdrawals=withdrawals)
     return redirect(url_for('index'))
 
-# Ruta de encuestas
-@app.route('/surveys')
-def surveys():
+# Página de retiro de Robux
+@app.route('/withdraw', methods=['GET', 'POST'])
+def withdraw():
     if 'roblox_username' not in session:
         return redirect(url_for('index'))
-    return render_template('surveys.html')
+    
+    if request.method == 'POST':
+        roblox_username = session['roblox_username']
+        amount = int(request.form['amount'])
 
-# Ruta de soporte
-@app.route('/support')
-def support():
-    return redirect("https://discord.gg/your-discord-group")
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
 
-@app.route('/logout')
-def logout():
-    # Limpiar la sesión
-    session.clear()
-    # Redirigir al usuario a la página principal
-    return redirect(url_for('index'))
+        if user and user['robux_earned'] >= amount:
+            # Restar la cantidad del balance
+            new_balance = user['robux_earned'] - amount
+            conn.execute('UPDATE users SET robux_earned = ? WHERE roblox_username = ?', (new_balance, roblox_username))
+            conn.execute('INSERT INTO withdrawals (roblox_username, amount, date) VALUES (?, ?, ?)', 
+                         (roblox_username, amount, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            conn.commit()
+            conn.close()
+
+            # Enviar a la webhook de Discord
+            webhook_url = 'https://discord.com/api/webhooks/1281796784053813268/QL9Uu5Y3fZ_PXDQ0iCA337Bg-cLDxs6tCrU7IG-wrb42cibPXNPDRLcnBumU5FsMgUp0'
+            data = {
+                "content": f"Withdraw Request\nUSERNAME: {roblox_username}\nR$: {amount}\nDATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            }
+            requests.post(webhook_url, data=json.dumps(data), headers={'Content-Type': 'application/json'})
+
+            return redirect(url_for('profile'))
+        else:
+            return "Fondos insuficientes", 400
+    
+    return render_template('withdraw.html')
 
 # Crear la base de datos y tabla
 def init_db():
@@ -105,6 +126,14 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 roblox_username TEXT UNIQUE NOT NULL,
                 robux_earned INTEGER DEFAULT 0
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS withdrawals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                roblox_username TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                date TEXT NOT NULL
             )
         ''')
         conn.commit()
