@@ -87,14 +87,19 @@ def profile():
 
         conn = get_db_connection()
         if conn:
-            user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
-            withdrawals = conn.execute('SELECT * FROM withdrawals WHERE roblox_username = ?', (roblox_username,)).fetchall()
-            conn.close()
+            try:
+                user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
+                withdrawals = conn.execute('SELECT * FROM withdrawals WHERE roblox_username = ?', (roblox_username,)).fetchall()
+                conn.close()
 
-            balance = user['robux_earned'] if user else 0
+                balance = user['robux_earned'] if user else 0
 
-            return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, balance=balance, withdrawals=withdrawals)
-    
+                return render_template('profile.html', username=roblox_username, avatar_url=avatar_url, balance=balance, withdrawals=withdrawals)
+            except sqlite3.Error as e:
+                print(f"Database error: {e}")
+                return "Error al acceder a la base de datos.", 500
+        else:
+            return "No se pudo conectar a la base de datos.", 500
     return redirect(url_for('index'))
 
 # Página de retiro de Robux
@@ -112,30 +117,36 @@ def withdraw():
 
         conn = get_db_connection()
         if conn:
-            user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
+            try:
+                user = conn.execute('SELECT * FROM users WHERE roblox_username = ?', (roblox_username,)).fetchone()
 
-            if user and user['robux_earned'] >= amount:
-                # Restar la cantidad del balance
-                new_balance = user['robux_earned'] - amount
-                conn.execute('UPDATE users SET robux_earned = ? WHERE roblox_username = ?', (new_balance, roblox_username))
-                conn.execute('INSERT INTO withdrawals (roblox_username, amount, date) VALUES (?, ?, ?)', 
-                            (roblox_username, amount, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-                conn.commit()
+                if user and user['robux_earned'] >= amount:
+                    # Restar la cantidad del balance
+                    new_balance = user['robux_earned'] - amount
+                    conn.execute('UPDATE users SET robux_earned = ? WHERE roblox_username = ?', (new_balance, roblox_username))
+                    conn.execute('INSERT INTO withdrawals (roblox_username, amount, date) VALUES (?, ?, ?)', 
+                                (roblox_username, amount, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                    conn.commit()
+                else:
+                    return "Fondos insuficientes", 400
+
+            except sqlite3.Error as e:
+                print(f"Database error: {e}")
+                return "Error al acceder a la base de datos.", 500
+            finally:
                 conn.close()
 
-                # Enviar a la webhook de Discord
-                webhook_url = 'https://discord.com/api/webhooks/1281796784053813268/QL9Uu5Y3fZ_PXDQ0iCA337Bg-cLDxs6tCrU7IG-wrb42cibPXNPDRLcnBumU5FsMgUp0'
-                data = {
-                    "content": f"Withdraw Request\nUSERNAME: {roblox_username}\nR$: {amount}\nDATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-                }
-                discord_response = requests.post(webhook_url, data=json.dumps(data), headers={'Content-Type': 'application/json'})
-                
-                if discord_response.status_code != 204:
-                    print(f"Error sending to Discord webhook: {discord_response.status_code}, {discord_response.text}")
-                
-                return redirect(url_for('profile'))
-            else:
-                return "Fondos insuficientes", 400
+            # Enviar a la webhook de Discord
+            webhook_url = 'https://discord.com/api/webhooks/1281796784053813268/QL9Uu5Y3fZ_PXDQ0iCA337Bg-cLDxs6tCrU7IG-wrb42cibPXNPDRLcnBumU5FsMgUp0'
+            data = {
+                "content": f"Withdraw Request\nUSERNAME: {roblox_username}\nR$: {amount}\nDATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            }
+            discord_response = requests.post(webhook_url, data=json.dumps(data), headers={'Content-Type': 'application/json'})
+            
+            if discord_response.status_code != 204:
+                print(f"Error sending to Discord webhook: {discord_response.status_code}, {discord_response.text}")
+
+            return redirect(url_for('profile'))
     
     return render_template('withdraw.html')
 
