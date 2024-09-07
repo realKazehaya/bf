@@ -157,5 +157,11 @@ def surveys():
         return redirect(url_for('index'))
     return render_template('surveys.html')
 
+# Ruta para cerrar sesión
+@app.route('/logout')
+def logout():
+    session.clear()  # Eliminar todos los datos de la sesión
+    return redirect(url_for('index'))  # Redirigir a la página de inicio
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

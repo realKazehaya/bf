@@ -12,7 +12,7 @@
             background-size: cover;
             color: #fff;
         }
-        .start-now {
+        .start-now, .login {
             text-align: center;
             padding: 100px 0;
             font-size: 2rem;
@@ -50,18 +50,18 @@
     <div class="container mt-5">
         {% if 'roblox_username' not in session %}
             <!-- Formulario de Inicio de Sesión -->
-            <div class="start-now">
-                <h1>Iniciar Sesión</h1>
+            <div class="login">
+                <h1>LOGIN</h1>
+                <p>Write your roblox username</p>
                 <form action="/login" method="POST">
                     <div class="form-group">
-                        <label for="username">Usuario de Roblox</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3">Iniciar Sesión</button>
+                    <button type="submit" class="btn btn-primary mt-3">OK</button>
                 </form>
             </div>
         {% else %}
-            <!-- Mensaje Start Now -->
+            <!-- Botón Start Now si el usuario ya ha iniciado sesión -->
             <div class="start-now">
                 <h1>Start Now</h1>
                 <p>¡Explora nuestra web y empieza a ganar Robux!</p>
