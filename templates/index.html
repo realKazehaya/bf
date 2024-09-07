@@ -9,22 +9,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="/">Mi Web</a>
+            <a class="navbar-brand" href="/">ROFlash</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fa-solid fa-house"></i> Inicio</a>
+                        <a class="nav-link" href="/"><i class="fa-solid fa-house"></i> Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/surveys"><i class="fa-solid fa-poll"></i> Encuestas</a>
+                        <a class="nav-link" href="/surveys"><i class="fa-solid fa-poll"></i> Surveys</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/withdraw"><i class="fa-solid fa-money-bill"></i> Retirar Robux</a>
+                        <a class="nav-link" href="/withdraw"><i class="fa-solid fa-money-bill"></i> Withdraw Robux</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/support"><i class="fa-solid fa-life-ring"></i> Soporte</a>
+                        <a class="nav-link" href="/support"><i class="fa-solid fa-life-ring"></i> Support</a>
                     </li>
                 </ul>
             </div>
@@ -32,26 +32,25 @@
     </nav>
 
     <div class="container mt-5">
-        {% if 'roblox_username' not in session %}
-            <!-- Formulario de Inicio de Sesión -->
-            <div class="login">
-                <h1>LOGIN</h1>
-                <p>Write your roblox username</p>
-                <form action="/login" method="POST">
-                    <div class="form-group">
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-center">LOGIN</h2>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3">OK</button>
-                </form>
+                    <div class="card-body">
+                        <p class="text-center">Write your Roblox username</p>
+                        <form action="/login" method="POST">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">OK</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-        {% else %}
-            <!-- Botón Start Now si el usuario ya ha iniciado sesión -->
-            <div class="start-now">
-                <h1>Start Now</h1>
-                <p>¡Explora nuestra web y empieza a ganar Robux!</p>
-                <a href="/surveys" class="btn btn-primary">Start Now</a>
-            </div>
-        {% endif %}
+        </div>
     </div>
 
     <!-- Popup de bienvenida -->
@@ -63,7 +62,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    ¡Bienvenido a Mi Web! Consulta las últimas noticias en nuestro Discord.
+                    ¡Bienvenido a ROFlash! Consulta las últimas noticias en nuestro Discord.
                 </div>
                 <div class="modal-footer">
                     <a href="https://discord.gg/your-discord-group" class="btn btn-primary">Join Discord</a>
