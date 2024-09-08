@@ -157,6 +157,21 @@ def surveys():
         return redirect(url_for('index'))
     return render_template('surveys.html')
 
+# Página de ranking
+@app.route('/ranking')
+def ranking():
+    conn = get_db_connection()
+    if conn:
+        users = conn.execute('SELECT * FROM users ORDER BY robux_earned DESC LIMIT 10').fetchall()
+        conn.close()
+        return render_template('ranking.html', users=users)
+    return "No se pudo conectar a la base de datos.", 500
+
+# Página de soporte
+@app.route('/support')
+def support():
+    return render_template('support.html')
+
 # Ruta para cerrar sesión
 @app.route('/logout')
 def logout():
