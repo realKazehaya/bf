@@ -14,7 +14,7 @@ body {
 
 /* Fondo de imagen cubriendo todo el body */
 .bg-image {
-    background-image: url('../images/brand.png');
+    background-image: url('https://mgg.autos/images/brand.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
