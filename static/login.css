@@ -1,4 +1,4 @@
-/* Estilos generales para la página de inicio */
+/* Estilos generales para la página de login */
 
 /* Fondo de la página */
 body {
@@ -36,10 +36,19 @@ body {
     color: #333;
 }
 
-/* Contenido principal */
+/* Formulario de inicio de sesión */
 .container {
     margin-top: 50px;
-    text-align: center;
+}
+
+.card {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco con opacidad */
+}
+
+.card-body {
+    padding: 20px;
 }
 
 h2 {
@@ -47,29 +56,37 @@ h2 {
     margin-bottom: 20px;
 }
 
-.btn-primary {
+form p {
+    margin-bottom: 20px;
+}
+
+form input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    width: 100%;
+}
+
+form button {
     background-color: #007bff;
     border: none;
-    padding: 15px 25px;
-    font-size: 1.25rem;
+    padding: 10px;
     border-radius: 5px;
-    text-decoration: none;
     color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
 }
 
-.btn-primary:hover {
+form button:hover {
     background-color: #0056b3;
     transition: background-color 0.3s ease;
-}
-
-.text-center {
-    color: #fff;
 }
 
 /* Media Queries */
 @media (max-width: 767px) {
     .btn-primary {
-        font-size: 1rem;
-        padding: 12px 20px;
+        font-size: 0.875rem;
+        padding: 8px 15px;
     }
 }
