@@ -1,75 +1,118 @@
-/* Estilos generales para la página de inicio */
+/* index.css */
 
-/* Fondo de la página */
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    background-image: url('https://mgg.autos/images/brand.png');
-    background-size: cover;
-    background-position: center;
-    color: #fff;
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
 }
 
-/* Header */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header Styles */
 .header {
-    background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco con opacidad */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #f4f4f4;
+    padding: 1rem;
 }
 
-.navbar-nav .nav-item {
-    margin: 0 15px;
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand,
+.nav-item {
+    margin-right: 20px;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    text-decoration: none;
+    color: #333;
+}
+
+.nav-item {
+    list-style-type: none;
 }
 
 .nav-link {
-    color: #333;
-    font-size: 1.1em;
-    padding: 10px 15px;
     text-decoration: none;
-}
-
-.nav-link:hover {
     color: #007bff;
     transition: color 0.3s ease;
 }
 
-.navbar-brand {
-    font-weight: bold;
-    color: #333;
+.nav-link:hover {
+    color: #0056b3;
 }
 
-/* Contenido principal */
-.container {
-    margin-top: 50px;
-    text-align: center;
-}
-
-h2 {
-    color: #fff;
-    margin-bottom: 20px;
-}
-
+/* Button Styles */
 .btn-primary {
+    display: inline-block;
     background-color: #007bff;
-    border: none;
-    padding: 15px 25px;
-    font-size: 1.25rem;
-    border-radius: 5px;
+    color: white;
+    padding: 10px 20px;
     text-decoration: none;
-    color: #fff;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
 }
 
 .btn-primary:hover {
     background-color: #0056b3;
-    transition: background-color 0.3s ease;
 }
 
-.text-center {
-    color: #fff;
+/* Form Styles */
+#login-form {
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Media Queries */
-@media (max-width: 767px) {
+#login-form input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#login-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 600px) {
+    .navbar-brand,
+    .nav-item {
+        margin-right: 10px;
+    }
+
     .btn-primary {
-        font-size: 1rem;
-        padding: 12px 20px;
+        padding: 8px 16px;
+    }
+
+    #login-form {
+        max-width: 250px;
     }
 }
