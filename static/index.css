@@ -1,5 +1,3 @@
-/* index.css */
-
 /* Global Styles */
 * {
     margin: 0;
@@ -115,4 +113,36 @@ body {
     #login-form {
         max-width: 250px;
     }
+}
+
+/* Additional navbar content styles */
+.navbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand,
+.nav-item {
+    margin-right: 20px;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    text-decoration: none;
+    color: #333;
+}
+
+.nav-item {
+    list-style-type: none;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #007bff;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #0056b3;
 }
