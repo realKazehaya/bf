@@ -24,6 +24,12 @@
         <button class="btn-primary" id="start-btn">Start Now</button>
     </div>
 
+    <!-- Formulario de inicio de sesión -->
+    <form action="/login" method="POST" id="login-form" style="display: none;">
+        <input type="text" name="username" placeholder="Enter Roblox Username" required>
+        <button type="submit">Login</button>
+    </form>
+
     <script type="text/javascript">
         const userIsLoggedIn = "{{ logged_in }}";
         console.log("Logged in value:", userIsLoggedIn);
@@ -32,10 +38,10 @@
             if (userIsLoggedIn === "True" || userIsLoggedIn === true) {
                 window.location.href = "/surveys";
             } else {
-                window.location.href = "/login";
+                document.getElementById('login-form').style.display = 'block';
             }
         });
     </script>
     
-    </body>
+</body>
 </html>
