@@ -21,9 +21,8 @@ def get_db_connection():
 # Ruta principal - Página de inicio
 @app.route('/')
 def index():
-    if 'roblox_username' in session:
-        return render_template('index.html', logged_in=True)
-    return render_template('index.html', logged_in=False)
+    logged_in = 'roblox_username' in session  # Verifica si el usuario está logueado
+    return render_template('index.html', logged_in=logged_in)  # Pasa logged_in como booleano
 
 # Ruta de inicio de sesión
 @app.route('/login', methods=['POST'])

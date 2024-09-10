@@ -3,45 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio - Robux</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="static/index.css">
+    <title>Start Now</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
 <body>
-    <!-- Header -->
-    <nav class="navbar navbar-expand-lg navbar-light header">
-        <div class="container">
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fa-solid fa-house"></i> Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/surveys"><i class="fa-solid fa-poll"></i> Encuestas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/withdraw"><i class="fa-solid fa-money-bill"></i> Retirar Robux</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/support"><i class="fa-solid fa-life-ring"></i> Soporte</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/logout"><i class="fa-solid fa-sign-out-alt"></i> Cerrar Sesión</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <header class="header">
+        <nav class="navbar">
+            <a class="navbar-brand" href="#">Your Website</a>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/login">Login</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
 
-    <!-- Contenido principal -->
-    <div class="container mt-5 text-center">
-        <h2 class="mb-4">¡Bienvenido a Robux!</h2>
-        <p>Comienza ahora para explorar nuestras encuestas y retirar Robux.</p>
-        <a href="/surveys" class="btn btn-primary btn-lg">Start Now</a>
+    <div class="container">
+        <h2>Welcome to Our Survey Platform</h2>
+        <p>Ready to get started? Click below to begin your journey!</p>
+        <button class="btn-primary" id="start-btn">Start Now</button>
     </div>
 
-    <!-- Scripts de Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script type="text/javascript">
+        const userIsLoggedIn = "{{ logged_in }}";
+        console.log("Logged in value:", userIsLoggedIn);
+    
+        document.getElementById('start-btn').addEventListener('click', function() {
+            if (userIsLoggedIn === "True" || userIsLoggedIn === true) {
+                window.location.href = "/surveys";
+            } else {
+                window.location.href = "/login";
+            }
+        });
+    </script>
+    
+    </body>
 </html>

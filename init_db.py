@@ -1,7 +1,7 @@
 import sqlite3
 
-def init_db():
-    conn = sqlite3.connect('database.db')
+def init_db(db_path='database.db'):
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     try:
         conn.execute('''
@@ -20,6 +20,7 @@ def init_db():
             )
         ''')
         conn.commit()
+        print("Database initialized successfully.")
     except sqlite3.Error as e:
         print(f"Error initializing database: {e}")
     finally:
