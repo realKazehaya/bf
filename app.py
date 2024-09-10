@@ -171,6 +171,10 @@ def ranking():
 def support():
     return render_template('support.html')
 
+@app.route('/faq')
+def faq():
+    return render_template('faq.html')
+
 # Ruta para cerrar sesión
 @app.route('/logout')
 def logout():
