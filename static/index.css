@@ -1,11 +1,14 @@
-/* General Styles */
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
+    background-image: url('https://mgg.autos/images/brand.png');
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
     color: #333;
     margin: 0;
     padding: 0;
 }
+
 
 .container {
     max-width: 800px;
