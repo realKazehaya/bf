@@ -76,10 +76,12 @@
         <h1>Free Fire Diamantes</h1>
     </header>
     <main>
-        <form action="/login" method="post">
-            <label for="freefire_id">ID de Free Fire:</label>
-            <input type="text" id="freefire_id" name="freefire_id" required placeholder="Ingresa tu ID de Free Fire">
-            <button type="submit">Iniciar sesión</button>
+            <form action="{{ url_for('login') }}" method="post">
+                {{ form.hidden_tag() }} <!-- Esto incluye el token CSRF en el formulario -->
+                <label for="freefire_id">Free Fire ID:</label>
+                <input type="text" name="freefire_id" id="freefire_id">
+                <button type="submit">OK</button>
+            </form>        
         </form>
         <a href="/faq">FAQ</a>
     </main>
