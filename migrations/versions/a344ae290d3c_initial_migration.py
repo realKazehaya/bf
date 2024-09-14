@@ -37,13 +37,17 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('freefire_id', sa.String(length=255), nullable=False))
+        batch_op.add_column(sa.Column('freefire_id', sa.String(length=255), nullable=False, server_default='default_value'))  # Valor por defecto temporal
         batch_op.add_column(sa.Column('diamonds', sa.Integer(), nullable=True))
         batch_op.add_column(sa.Column('last_login', sa.DateTime(), nullable=True))
         batch_op.drop_constraint('user_username_key', type_='unique')
         batch_op.create_unique_constraint(None, ['freefire_id'])
         batch_op.drop_column('username')
         batch_op.drop_column('balance')
+
+    # Eliminar el valor por defecto después de actualizar los datos
+    with op.batch_alter_table('user', schema=None) as batch_op:
+        batch_op.alter_column('freefire_id', server_default=None)
 
     # ### end Alembic commands ###
 
