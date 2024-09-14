@@ -1,72 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surveys</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='surveys.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Completar Encuestas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header>
-        <div class="container">
-            <nav>
-                <ul>
-                    <li><a href="{{ url_for('profile') }}">PROFILE</a></li>
-                    <li><a href="#">SURVEYS</a></li>
-                    <li><a href="{{ url_for('withdraw') }}">WITHDRAW</a></li>
-                    <li><a href="{{ url_for('ranking') }}">RANKING</a></li>
-                    <li><a href="{{ url_for('faq') }}">FAQ</a></li>
-                    <li><a href="{{ url_for('support') }}">SUPPORT</a></li>
-                </ul>
-            </nav>
-            <h1>Welcome to Surveys</h1>
-        </div>
+        <h1>Completar Encuestas</h1>
     </header>
-
-    <!-- Main Content -->
     <main>
-        <div class="content">
-            <h2>Earn R$ Answering Surveys</h2>
-            <div class="offer-buttons">
-                <button data-service="cpx" class="active">CPX</button>
-                <button data-service="adgate">AdGate</button>
-                <button data-service="lootably">Lootably</button>
-                <button data-service="socials">Socials</button>
-            </div>
-            <div id="offers-container" class="offers-container">
-                <!-- Dynamic content will be loaded here -->
-                <iframe id="offer-iframe" width="100%" frameborder="0" height="2000px" src="https://offers.cpx-research.com/index.php?app_id=24310&ext_user_id={unique_user_id}&secure_hash={secure_hash}&username={user_name}&email={user_email}&subid_1=&subid_2"></iframe>
-            </div>
-        </div>
+        <form action="/surveys/{{ user_id }}" method="post">
+            <label for="survey_name">Nombre de la Encuesta:</label>
+            <input type="text" id="survey_name" name="survey_name" required>
+            <label for="diamonds_earned">Diamantes Ganados:</label>
+            <input type="number" id="diamonds_earned" name="diamonds_earned" required>
+            <button type="submit">Enviar Encuesta</button>
+        </form>
     </main>
-
-    <script>
-        $(document).ready(function() {
-            $('.offer-buttons button').click(function() {
-                var service = $(this).data('service');
-                $('.offer-buttons button').removeClass('active');
-                $(this).addClass('active');
-                
-                // Load the iframe source based on the selected service
-                var iframeSrc = '';
-                switch (service) {
-                    case 'cpx':
-                        iframeSrc = 'https://offers.cpx-research.com/index.php?app_id=24310&ext_user_id={unique_user_id}&secure_hash={secure_hash}&username={user_name}&email={user_email}&subid_1=&subid_2';
-                        break;
-                    case 'adgate':
-                        iframeSrc = 'https://www.adgate.me/offer-wall/?key=your_adgate_key';
-                        break;
-                    case 'lootably':
-                        iframeSrc = 'https://www.lootably.com/offer-wall/?key=your_lootably_key';
-                        break;
-                    case 'socials':
-                        iframeSrc = 'https://www.socials.com/offer-wall/?key=your_socials_key';
-                        break;
-                }
-                $('#offer-iframe').attr('src', iframeSrc);
-            });
-        });
-    </script>
 </body>
 </html>

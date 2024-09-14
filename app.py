@@ -1,77 +1,103 @@
-import os
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, request, jsonify, redirect, url_for, render_template
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+import os
 import requests
 
 app = Flask(__name__)
-
-# Configurar la clave secreta
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'clave_secreta_por_defecto')
-
-# Configurar la URI de la base de datos
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ff:hGJOuC7QjMydteDbt22CgG3oQXA47dyh@dpg-criccfjv2p9s738g854g-a.oregon-postgres.render.com/ff_27eh'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Inicializar SQLAlchemy
+app.config.from_object('config.Config')
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
-# Definir modelos aquí
+DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    balance = db.Column(db.Integer, default=0)
+    freefire_id = db.Column(db.String(255), unique=True, nullable=False)
+    diamonds = db.Column(db.Integer, default=0)
+    last_login = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-# Crear la base de datos
-with app.app_context():
-    db.create_all()
+class Survey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    survey_name = db.Column(db.String(255))
+    diamonds_earned = db.Column(db.Integer)
+    completed_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-# Página principal
+class Withdrawal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    region = db.Column(db.String(255))
+    diamonds = db.Column(db.Integer)
+    requested_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
 @app.route('/')
 def index():
-    if 'user_id' in session:
-        user = User.query.filter_by(username=session['user_id']).first()
-        if user:
-            return render_template('index.html', user_id=user.username, balance=user.balance)
     return render_template('index.html')
 
-# Página de inicio de sesión
 @app.route('/login', methods=['POST'])
 def login():
-    user_id = request.form.get('freefire_id')
-    if user_id:
-        user = User.query.filter_by(username=user_id).first()
-        if not user:
-            user = User(username=user_id)
-            db.session.add(user)
-            db.session.commit()
-        session['user_id'] = user.username
-        return redirect(url_for('index'))
+    freefire_id = request.form['freefire_id']
+    user = User.query.filter_by(freefire_id=freefire_id).first()
+
+    if user:
+        user.last_login = db.func.current_timestamp()
     else:
-        flash('Debes ingresar un ID válido.')
-        return redirect(url_for('index'))
+        user = User(freefire_id=freefire_id)
+        db.session.add(user)
 
-# Página de retiro
-@app.route('/withdraw', methods=['GET', 'POST'])
-def withdraw():
-    if 'user_id' not in session:
-        return redirect(url_for('index'))
-    
-    user = User.query.filter_by(username=session['user_id']).first()
+    db.session.commit()
+    return redirect(url_for('profile', user_id=user.id))
+
+@app.route('/profile/<int:user_id>')
+def profile(user_id):
+    user = User.query.get(user_id)
     if not user:
-        return redirect(url_for('index'))
+        return jsonify({'message': 'Usuario no encontrado'}), 404
 
-    if request.method == 'POST':
-        diamonds = int(request.form.get('diamonds', 0))
-        if diamonds >= 100 and diamonds <= user.balance:
-            # Simular el envío a Discord (aquí llamaríamos a un bot real)
-            flash(f'Solicitud de retiro enviada por {diamonds} diamantes.')
-            user.balance -= diamonds
-            db.session.commit()
-        else:
-            flash('Debes retirar al menos 100 diamantes y no puedes retirar más de tu balance.')
-        return redirect(url_for('withdraw'))
+    return render_template('profile.html', user=user)
 
-    return render_template('withdraw.html', balance=user.balance)
+@app.route('/surveys/<int:user_id>', methods=['POST'])
+def complete_survey(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'Usuario no encontrado'}), 404
+
+    survey_name = request.form['survey_name']
+    diamonds_earned = int(request.form['diamonds_earned'])
+
+    user.diamonds += diamonds_earned
+    survey = Survey(user_id=user.id, survey_name=survey_name, diamonds_earned=diamonds_earned)
+    db.session.add(survey)
+    db.session.commit()
+
+    return jsonify({'message': 'Encuesta completada'}), 200
+
+@app.route('/withdraw', methods=['POST'])
+def withdraw():
+    user_id = int(request.form['user_id'])
+    region = request.form['region']
+    diamonds = int(request.form['diamonds'])
+
+    user = User.query.get(user_id)
+    if not user or user.diamonds < diamonds:
+        return jsonify({'message': 'Usuario no encontrado o diamantes insuficientes'}), 400
+
+    user.diamonds -= diamonds
+    withdrawal = Withdrawal(user_id=user.id, region=region, diamonds=diamonds)
+    db.session.add(withdrawal)
+    db.session.commit()
+
+    webhook_payload = {
+        'content': f"Solicitud de Retiro:\nRegión: {region}\nID: {user.freefire_id}\nDiamantes: {diamonds}\nFecha: {withdrawal.requested_at}"
+    }
+    requests.post(DISCORD_WEBHOOK_URL, json=webhook_payload)
+
+    return jsonify({'message': 'Solicitud de retiro recibida'}), 200
+
+@app.route('/faq')
+def faq():
+    return render_template('faq.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

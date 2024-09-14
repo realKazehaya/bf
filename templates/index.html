@@ -3,35 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuestas - Free Fire</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Inicio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1 class="mt-5 text-center">Gana diamantes completando encuestas</h1>
-
-        {% if user_id %}
-            <div class="text-center mt-4">
-                <h4>ID Free Fire: {{ user_id }}</h4>
-                <p>Balance de diamantes: {{ balance }}</p>
-                <a href="{{ url_for('withdraw') }}" class="btn btn-primary">Retirar Diamantes</a>
-            </div>
-        {% else %}
-            <div class="text-center mt-4">
-                <h4>Inicia sesión con tu ID de Free Fire</h4>
-                <form action="{{ url_for('login') }}" method="POST">
-                    <input type="text" name="freefire_id" class="form-control" placeholder="Ingresa tu ID de Free Fire">
-                    <select name="region" class="form-control mt-2">
-                        <option value="IND">India</option>
-                        <option value="BR">Brasil</option>
-                        <option value="SG">Singapur</option>
-                        <!-- Puedes agregar más regiones aquí -->
-                    </select>
-                    <button type="submit" class="btn btn-success mt-2">Iniciar sesión</button>
-                </form>
-            </div>
-        {% endif %}
-    </div>
+    <header>
+        <h1>Free Fire Diamantes</h1>
+    </header>
+    <main>
+        <form action="/login" method="post">
+            <label for="freefire_id">ID de Free Fire:</label>
+            <input type="text" id="freefire_id" name="freefire_id" required>
+            <button type="submit">Iniciar sesión</button>
+        </form>
+        <a href="/faq">FAQ</a>
+    </main>
 </body>
 </html>
