@@ -1,32 +1,18 @@
-<%- include('partials/header.ejs') %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Perfil de <%= user.freefire_id %></h1>
+    <p>Diamantes: <%= user.diamonds %></p>
 
-<h1>Perfil de <%= user.ffId %></h1>
-<p>Balance de Diamantes: <%= user.balance %></p>
-
-<h2>Historial de Retiro</h2>
-<table>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Cantidad</th>
-      <th>Estado</th>
-      <th>Fecha</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% withdraws.forEach(withdraw => { %>
-      <tr>
-        <td><%= withdraw.id %></td>
-        <td><%= withdraw.amount %></td>
-        <td><%= withdraw.status %></td>
-        <td><%= withdraw.date %></td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
-
-<form action="/logout" method="POST">
-  <button type="submit">Cerrar Sesión</button>
-</form>
-
-<%- include('partials/footer.ejs') %>
+    <h2>Historial de retiros</h2>
+    <ul>
+        <!-- Aquí podrías añadir código para mostrar el historial de retiros si lo implementas -->
+    </ul>
+</body>
+</html>

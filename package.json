@@ -1,17 +1,17 @@
 {
-    "name": "miappdiamantes",
+    "name": "freefire-app",
     "version": "1.0.0",
-    "main": "src/app.js",
+    "main": "app.js",
     "scripts": {
-      "start": "node src/app.js"
+      "start": "node app.js"
     },
     "dependencies": {
-    "express": "^4.17.1",
-    "body-parser": "^1.19.0",
-    "express-session": "^1.17.2",
-    "pg": "^8.7.1",
-    "dotenv": "^10.0.0",
-    "ejs": "^3.1.10"
+      "express": "^4.18.2",
+      "ejs": "^3.1.8",
+      "pg": "^8.7.1",
+      "pg-hstore": "^2.3.4",
+      "sequelize": "^6.32.0",
+      "express-session": "^1.17.3"
     }
   }
   
