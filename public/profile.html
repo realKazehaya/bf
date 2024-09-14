@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+  <div class="profile-container">
+    <h1>Perfil de <span id="user-id"></span></h1>
+    <p>Balance de Diamantes: <span id="balance"></span></p>
+    <h3>Historial de retiro:</h3>
+    <ul id="withdraw-history"></ul>
+  </div>
+
+  <script>
+    const ffId = localStorage.getItem('ff-id');
+    document.getElementById('user-id').textContent = ffId;
+    
+    fetch(`/profile/${ffId}`)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('balance').textContent = data.balance;
+        data.withdraws.forEach(w => {
+          const li = document.createElement('li');
+          li.textContent = `Retiro de ${w.amount} diamantes - Estado: ${w.status}`;
+          document.getElementById('withdraw-history').appendChild(li);
+        });
+      });
+  </script>
+</body>
+</html>

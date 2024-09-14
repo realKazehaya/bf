@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retirar Diamantes</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+  <div class="withdraw-container">
+    <h1>Retirar Diamantes</h1>
+    <p>Stock: <span id="stock-status">ON</span></p>
+    <input type="number" id="diamonds-amount" placeholder="0 Diamantes">
+    <button id="withdraw-btn">OK</button>
+  </div>
+
+  <script>
+    fetch('/stock')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('stock-status').textContent = data.stock ? 'ON' : 'OFF';
+      });
+
+    document.getElementById('withdraw-btn').addEventListener('click', () => {
+      const amount = document.getElementById('diamonds-amount').value;
+      const ffId = localStorage.getItem('ff-id');
+      
+      if (amount && ffId) {
+        fetch('/withdraw', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ffId, amount }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Retiro en pendiente.');
+          } else {
+            alert('Error al retirar.');
+          }
+        });
+      } else {
+        alert('Por favor ingresa la cantidad de diamantes.');
+      }
+    });
+  </script>
+</body>
+</html>
