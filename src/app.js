@@ -2,6 +2,7 @@ const { Sequelize } = require('sequelize');
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session); // Importar connect-pg-simple
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const withdrawRoutes = require('./routes/withdraw');
@@ -32,11 +33,18 @@ sequelize.authenticate()
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Configuración de sesión
+// Configuración de sesión con PostgreSQL
+const sessionStore = new pgSession({
+  pool: sequelize.connectionManager.pool, // Usar la conexión del pool de Sequelize
+  tableName: 'session' // Nombre de la tabla para almacenar sesiones
+});
+
 app.use(session({
-  secret: 'freefire_secret_key',
+  store: sessionStore,
+  secret: process.env.SESSION_SECRET || 'default_secret_key',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production' } // Ajustar según sea necesario
 }));
 
 // Middleware para procesar el cuerpo de la solicitud
