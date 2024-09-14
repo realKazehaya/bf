@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect, url_for, render_template
+from flask import Flask, request, jsonify, redirect, url_for, render_template, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
@@ -6,6 +6,7 @@ import requests
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'supersecretkey')  # Necesario para flash messages
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -82,7 +83,8 @@ def withdraw():
 
         user = User.query.get(user_id)
         if not user or user.diamonds < diamonds:
-            return jsonify({'message': 'Usuario no encontrado o diamantes insuficientes'}), 400
+            flash('No tienes diamantes suficientes para retirar.', 'error')
+            return redirect(url_for('withdraw', user_id=user_id))
 
         user.diamonds -= diamonds
         withdrawal = Withdrawal(user_id=user.id, region=region, diamonds=diamonds)
@@ -94,10 +96,11 @@ def withdraw():
         }
         requests.post(DISCORD_WEBHOOK_URL, json=webhook_payload)
 
-        return jsonify({'message': 'Solicitud de retiro recibida'}), 200
+        flash('Solicitud de retiro recibida.', 'success')
+        return redirect(url_for('withdraw', user_id=user_id))
     else:
-        # Mostrar el formulario para hacer un retiro
-        return render_template('withdraw.html')
+        user_id = request.args.get('user_id', type=int)
+        return render_template('withdraw.html', user_id=user_id)
 
 @app.route('/faq')
 def faq():

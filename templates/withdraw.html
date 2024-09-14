@@ -3,23 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitar Retiro</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Retiro</title>
 </head>
 <body>
-    <header>
-        <h1>Solicitar Retiro</h1>
-    </header>
-    <main>
-        <form action="/withdraw" method="post">
-            <label for="user_id">ID de Usuario:</label>
-            <input type="number" id="user_id" name="user_id" required>
-            <label for="region">Región:</label>
-            <input type="text" id="region" name="region" required>
-            <label for="diamonds">Diamantes a Retirar:</label>
-            <input type="number" id="diamonds" name="diamonds" required>
-            <button type="submit">Solicitar Retiro</button>
-        </form>
-    </main>
+    <h1>Solicitud de Retiro</h1>
+
+    <!-- Mensajes flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('withdraw') }}" method="post">
+        <input type="hidden" name="user_id" value="{{ user_id }}">
+        
+        <label for="region">Región:</label>
+        <select name="region" id="region" required>
+            <option value="AL">América Latina (AL)</option>
+            <option value="NA">América del Norte (NA)</option>
+            <option value="SA">América del Sur (SA)</option>
+            <option value="AS">Asia (AS)</option>
+            <option value="EEUU">Europa (EEUU)</option>
+            <option value="MEA">Medio Oriente y África (MEA)</option>
+            <option value="IN">India (IN)</option>
+            <option value="ID">Indonesia (ID)</option>
+            <option value="PK">Pakistán (PK)</option>
+            <option value="TH">Tailandia (TH)</option>
+        </select>
+        
+        <label for="diamonds">Diamantes:</label>
+        <input type="number" name="diamonds" id="diamonds" min="1" required>
+
+        <button type="submit">Retirar</button>
+    </form>
+
+    <a href="{{ url_for('profile', user_id=user_id) }}">Volver al perfil</a>
 </body>
 </html>
