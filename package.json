@@ -6,10 +6,11 @@
       "start": "node src/app.js"
     },
     "dependencies": {
-      "express": "^4.17.3",
-      "pg": "^8.7.1",
-      "dotenv": "^16.0.0",
-      "body-parser": "^1.20.1"
+    "express": "^4.17.1",
+    "body-parser": "^1.19.0",
+    "express-session": "^1.17.2",
+    "pg": "^8.7.1",
+    "dotenv": "^10.0.0"
     }
   }
   
