@@ -12,4 +12,30 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
+  /* Estilos para el footer */
+footer {
+    background-color: #f1f1f1; /* Color de fondo del footer */
+    padding: 20px; /* Espaciado interno */
+    text-align: center; /* Centra el texto */
+  }
+  
+  .footer-links {
+    list-style: none; /* Elimina las viñetas de la lista */
+    padding: 0; /* Elimina el padding */
+  }
+  
+  .footer-links li {
+    display: inline; /* Muestra los elementos de la lista en línea */
+    margin: 0 10px; /* Espaciado entre los elementos */
+  }
+  
+  .footer-links a {
+    text-decoration: none; /* Elimina el subrayado de los enlaces */
+    color: #333; /* Color de los enlaces */
+  }
+  
+  .footer-links a:hover {
+    text-decoration: underline; /* Subraya el enlace cuando el ratón está sobre él */
+  }
+  
   
