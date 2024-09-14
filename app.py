@@ -81,7 +81,8 @@ def login():
 def profile(user_id):
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'message': 'Usuario no encontrado'}), 404
+        flash('Usuario no encontrado.', 'error')
+        return redirect(url_for('index'))
 
     return render_template('profile.html', user=user)
 
@@ -115,7 +116,8 @@ def withdraw():
             user = User.query.get(user_id)
             if not user:
                 flash('Usuario no encontrado.', 'error')
-                return redirect(url_for('withdraw', user_id=user_id))
+                return redirect(url_for('index'))  # Redirige al índice en lugar de la página de retiro
+
             if user.diamonds < diamonds:
                 flash('No tienes diamantes suficientes para retirar.', 'error')
                 return redirect(url_for('withdraw', user_id=user_id))

@@ -3,17 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil</title>
+    <title>Perfil de {{ user.freefire_id }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .profile {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 2rem;
+        }
+        p {
+            color: #666;
+            font-size: 1.2rem;
+        }
+    </style>
 </head>
 <body>
-    <header>
+    <div class="profile">
         <h1>Perfil de {{ user.freefire_id }}</h1>
-    </header>
-    <main>
         <p>Diamantes: {{ user.diamonds }}</p>
-        <a href="/surveys/{{ user.id }}">Completar Encuestas</a>
-        <a href="/withdraw">Solicitar Retiro</a>
-    </main>
+    </div>
 </body>
 </html>
