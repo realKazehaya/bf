@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const session = require('express-session');
 const { Pool } = require('pg');
 const path = require('path');
 require('dotenv').config();
@@ -10,6 +11,14 @@ const pool = new Pool(); // Render gestiona las credenciales de la base de datos
 // Configuración de EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Configuración de sesiones
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-default-secret', // Usa una variable de entorno para el secreto de la sesión
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Cambiar a true si usas HTTPS
+}));
 
 // Middleware
 app.use(bodyParser.json());
@@ -105,8 +114,12 @@ app.post('/payment', async (req, res) => {
 
 // Maneja el cierre de sesión
 app.post('/logout', (req, res) => {
-  req.session.destroy(); // Destruye la sesión
-  res.redirect('/');
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error al cerrar sesión' });
+    }
+    res.redirect('/');
+  });
 });
 
 // Configurar el servidor para escuchar en el puerto
