@@ -73,27 +73,31 @@ def complete_survey(user_id):
 
     return jsonify({'message': 'Encuesta completada'}), 200
 
-@app.route('/withdraw', methods=['POST'])
+@app.route('/withdraw', methods=['GET', 'POST'])
 def withdraw():
-    user_id = int(request.form['user_id'])
-    region = request.form['region']
-    diamonds = int(request.form['diamonds'])
+    if request.method == 'POST':
+        user_id = int(request.form['user_id'])
+        region = request.form['region']
+        diamonds = int(request.form['diamonds'])
 
-    user = User.query.get(user_id)
-    if not user or user.diamonds < diamonds:
-        return jsonify({'message': 'Usuario no encontrado o diamantes insuficientes'}), 400
+        user = User.query.get(user_id)
+        if not user or user.diamonds < diamonds:
+            return jsonify({'message': 'Usuario no encontrado o diamantes insuficientes'}), 400
 
-    user.diamonds -= diamonds
-    withdrawal = Withdrawal(user_id=user.id, region=region, diamonds=diamonds)
-    db.session.add(withdrawal)
-    db.session.commit()
+        user.diamonds -= diamonds
+        withdrawal = Withdrawal(user_id=user.id, region=region, diamonds=diamonds)
+        db.session.add(withdrawal)
+        db.session.commit()
 
-    webhook_payload = {
-        'content': f"Solicitud de Retiro:\nRegión: {region}\nID: {user.freefire_id}\nDiamantes: {diamonds}\nFecha: {withdrawal.requested_at}"
-    }
-    requests.post(DISCORD_WEBHOOK_URL, json=webhook_payload)
+        webhook_payload = {
+            'content': f"Solicitud de Retiro:\nRegión: {region}\nID: {user.freefire_id}\nDiamantes: {diamonds}\nFecha: {withdrawal.requested_at}"
+        }
+        requests.post(DISCORD_WEBHOOK_URL, json=webhook_payload)
 
-    return jsonify({'message': 'Solicitud de retiro recibida'}), 200
+        return jsonify({'message': 'Solicitud de retiro recibida'}), 200
+    else:
+        # Mostrar el formulario para hacer un retiro
+        return render_template('withdraw.html')
 
 @app.route('/faq')
 def faq():
