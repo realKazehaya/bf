@@ -77,29 +77,37 @@ def complete_survey(user_id):
 @app.route('/withdraw', methods=['GET', 'POST'])
 def withdraw():
     if request.method == 'POST':
-        user_id = int(request.form['user_id'])
-        region = request.form['region']
-        diamonds = int(request.form['diamonds'])
+        try:
+            user_id = int(request.form['user_id'])
+            region = request.form['region']
+            diamonds = int(request.form['diamonds'])
 
-        user = User.query.get(user_id)
-        if not user or user.diamonds < diamonds:
-            flash('No tienes diamantes suficientes para retirar.', 'error')
+            user = User.query.get(user_id)
+            if not user or user.diamonds < diamonds:
+                flash('No tienes diamantes suficientes para retirar.', 'error')
+                return redirect(url_for('withdraw', user_id=user_id))
+
+            user.diamonds -= diamonds
+            withdrawal = Withdrawal(user_id=user.id, region=region, diamonds=diamonds)
+            db.session.add(withdrawal)
+            db.session.commit()
+
+            webhook_payload = {
+                'content': f"Solicitud de Retiro:\nRegión: {region}\nID: {user.freefire_id}\nDiamantes: {diamonds}\nFecha: {withdrawal.requested_at}"
+            }
+            requests.post(DISCORD_WEBHOOK_URL, json=webhook_payload)
+
+            flash('Solicitud de retiro recibida.', 'success')
             return redirect(url_for('withdraw', user_id=user_id))
-
-        user.diamonds -= diamonds
-        withdrawal = Withdrawal(user_id=user.id, region=region, diamonds=diamonds)
-        db.session.add(withdrawal)
-        db.session.commit()
-
-        webhook_payload = {
-            'content': f"Solicitud de Retiro:\nRegión: {region}\nID: {user.freefire_id}\nDiamantes: {diamonds}\nFecha: {withdrawal.requested_at}"
-        }
-        requests.post(DISCORD_WEBHOOK_URL, json=webhook_payload)
-
-        flash('Solicitud de retiro recibida.', 'success')
-        return redirect(url_for('withdraw', user_id=user_id))
+        except Exception as e:
+            app.logger.error(f'Error en /withdraw: {e}')
+            flash('Hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo.', 'error')
+            return redirect(url_for('withdraw', user_id=user_id))
     else:
         user_id = request.args.get('user_id', type=int)
+        if not user_id:
+            flash('ID de usuario no proporcionado.', 'error')
+            return redirect(url_for('index'))
         return render_template('withdraw.html', user_id=user_id)
 
 @app.route('/faq')
