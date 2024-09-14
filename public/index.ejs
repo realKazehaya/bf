@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <% include partials/header.ejs %>
+
+  <h1>Login</h1>
+  <form action="/login" method="POST">
+    <label for="region">Select your Region:</label>
+    <select id="region" name="region">
+      <option value="AL">América Latina (AL)</option>
+      <option value="NA">América del Norte (NA)</option>
+      <option value="SA">América del Sur (SA)</option>
+      <option value="AS">Asia (AS)</option>
+      <option value="EU">Europa (EU)</option>
+      <option value="MEA">Medio Oriente y África (MEA)</option>
+      <option value="IN">India (IN)</option>
+      <option value="ID">Indonesia (ID)</option>
+      <option value="PK">Pakistán (PK)</option>
+      <option value="TH">Tailandia (TH)</option>
+      <option value="VN">Vietnam (VN)</option>
+      <option value="BR">Brasil (BR)</option>
+    </select>
+    <label for="id">Free Fire ID:</label>
+    <input type="text" id="id" name="id" required>
+    <button type="submit">OK</button>
+  </form>
+</body>
+</html>

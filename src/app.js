@@ -1,41 +1,69 @@
 const express = require('express');
-const app = express();
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
+const path = require('path');
 require('dotenv').config();
 
+const app = express();
 const pool = new Pool(); // Render gestiona las credenciales de la base de datos a través de variables de entorno
 
+// Configuración de EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Middleware
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
 // Variables de stock
 let stock = true;
 
+// Página de inicio
+app.get('/', (req, res) => {
+  if (req.session.user) {
+    res.redirect('/profile');
+  } else {
+    res.render('index');
+  }
+});
+
 // Maneja el login del usuario
 app.post('/login', async (req, res) => {
   const { ffId, region } = req.body;
   try {
     await pool.query('INSERT INTO users (ffId, region) VALUES ($1, $2) ON CONFLICT (ffId) DO NOTHING', [ffId, region]);
-    res.json({ success: true });
+    req.session.user = { ffId, region }; // Guarda la sesión
+    res.redirect('/profile');
   } catch (error) {
     res.status(500).json({ error: 'Error al iniciar sesión' });
   }
 });
 
 // Obtener el perfil del usuario
-app.get('/profile/:ffId', async (req, res) => {
-  const { ffId } = req.params;
+app.get('/profile', async (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+
+  const { ffId } = req.session.user;
   try {
     const userResult = await pool.query('SELECT balance FROM users WHERE ffId = $1', [ffId]);
     const withdrawResult = await pool.query('SELECT * FROM withdraws WHERE ffId = $1', [ffId]);
-    res.json({
+    res.render('profile', {
       balance: userResult.rows[0] ? userResult.rows[0].balance : 0,
       withdraws: withdrawResult.rows,
     });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener el perfil' });
   }
+});
+
+// Página de encuestas
+app.get('/surveys', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+  res.render('surveys');
 });
 
 // Maneja el retiro de diamantes
@@ -77,10 +105,11 @@ app.post('/payment', async (req, res) => {
 
 // Maneja el cierre de sesión
 app.post('/logout', (req, res) => {
-  // El cierre de sesión puede ser gestionado del lado del cliente (limpiar localStorage, etc.)
-  res.json({ success: true });
+  req.session.destroy(); // Destruye la sesión
+  res.redirect('/');
 });
 
+// Configurar el servidor para escuchar en el puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

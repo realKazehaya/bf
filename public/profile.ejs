@@ -1,0 +1,32 @@
+<%- include('partials/header.ejs') %>
+
+<h1>Perfil de <%= user.ffId %></h1>
+<p>Balance de Diamantes: <%= user.balance %></p>
+
+<h2>Historial de Retiro</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Cantidad</th>
+      <th>Estado</th>
+      <th>Fecha</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% withdraws.forEach(withdraw => { %>
+      <tr>
+        <td><%= withdraw.id %></td>
+        <td><%= withdraw.amount %></td>
+        <td><%= withdraw.status %></td>
+        <td><%= withdraw.date %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<form action="/logout" method="POST">
+  <button type="submit">Cerrar Sesión</button>
+</form>
+
+<%- include('partials/footer.ejs') %>

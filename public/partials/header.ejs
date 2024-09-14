@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/styles.css"> <!-- Enlaza al archivo CSS -->
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <% if (user) { %>
+          <li><a href="/profile/<%= user.ffId %>">Profile</a></li>
+          <li><a href="/surveys">Surveys</a></li>
+          <li><a href="/logout">Logout</a></li>
+        <% } else { %>
+          <li><a href="/">Login</a></li>
+        <% } %>
+      </ul>
+    </nav>
+  </header>
+  <main>
