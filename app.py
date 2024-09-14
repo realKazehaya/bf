@@ -82,27 +82,35 @@ def withdraw():
             region = request.form['region']
             diamonds = int(request.form['diamonds'])
 
+            # Validar si el usuario existe y tiene suficientes diamantes
             user = User.query.get(user_id)
-            if not user or user.diamonds < diamonds:
+            if not user:
+                flash('Usuario no encontrado.', 'error')
+                return redirect(url_for('withdraw', user_id=user_id))
+            if user.diamonds < diamonds:
                 flash('No tienes diamantes suficientes para retirar.', 'error')
                 return redirect(url_for('withdraw', user_id=user_id))
 
+            # Restar diamantes y registrar el retiro
             user.diamonds -= diamonds
             withdrawal = Withdrawal(user_id=user.id, region=region, diamonds=diamonds)
             db.session.add(withdrawal)
             db.session.commit()
 
+            # Enviar información al webhook de Discord
             webhook_payload = {
                 'content': f"Solicitud de Retiro:\nRegión: {region}\nID: {user.freefire_id}\nDiamantes: {diamonds}\nFecha: {withdrawal.requested_at}"
             }
             requests.post(DISCORD_WEBHOOK_URL, json=webhook_payload)
 
             flash('Solicitud de retiro recibida.', 'success')
-            return redirect(url_for('withdraw', user_id=user_id))
+            return redirect(url_for('profile', user_id=user_id))
+
         except Exception as e:
             app.logger.error(f'Error en /withdraw: {e}')
             flash('Hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo.', 'error')
             return redirect(url_for('withdraw', user_id=user_id))
+
     else:
         user_id = request.args.get('user_id', type=int)
         if not user_id:
