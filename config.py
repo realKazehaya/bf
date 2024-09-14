@@ -1,6 +1,6 @@
 import os
 
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = 'postgresql://ff:hGJOuC7QjMydteDbt22CgG3oQXA47dyh@dpg-criccfjv2p9s738g854g-a.oregon-postgres.render.com/ff_27eh'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
