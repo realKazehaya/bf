@@ -53,10 +53,15 @@ class WithdrawalForm(FlaskForm):
         DataRequired(), NumberRange(min=1, message="Debes retirar al menos 1 diamante.")
     ])
 
+# Formulario de Inicio de Sesión con Free Fire ID
+class FreeFireIDForm(FlaskForm):
+    freefire_id = HiddenField(validators=[DataRequired()])
+
 # Rutas
 @app.route('/')
 def index():
-    return render_template('index.html')
+    form = FreeFireIDForm()  # Crear una instancia del formulario
+    return render_template('index.html', form=form)  # Pasar el formulario a la plantilla
 
 @app.route('/login', methods=['POST'])
 def login():
