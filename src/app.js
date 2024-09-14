@@ -1,7 +1,7 @@
-const express = require('express');
-const session = require('express-session');
 const { Sequelize } = require('sequelize');
 const path = require('path');
+const express = require('express');
+const session = require('express-session');
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const withdrawRoutes = require('./routes/withdraw');
@@ -11,9 +11,15 @@ const surveysRoutes = require('./routes/surveys');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de la base de datos
+// Configuración de la base de datos con SSL
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false // Cambia esto a `true` en producción si usas un certificado válido
+    }
+  },
   logging: false
 });
 
@@ -49,7 +55,7 @@ app.use('/surveys', surveysRoutes);
 
 // Manejo de errores 404
 app.use((req, res, next) => {
-  res.status(404).render('404'); // Crea una vista 404.ejs si aún no existe
+  res.status(404).render('404'); // Asegúrate de tener una vista 404.ejs
 });
 
 // Iniciar el servidor
