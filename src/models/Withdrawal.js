@@ -1,12 +1,9 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  logging: false
-});
+const sequelize = new Sequelize(process.env.DATABASE_URL, { dialect: 'postgres' });
 
 const Withdrawal = sequelize.define('Withdrawal', {
   userId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false
   },
   region: {
@@ -17,18 +14,17 @@ const Withdrawal = sequelize.define('Withdrawal', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  transactionNumber: {
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false
-  },
   date: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW
   },
+  transactionNumber: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   status: {
     type: DataTypes.STRING,
-    defaultValue: 'Pending'
+    defaultValue: 'pending'
   }
 });
 
