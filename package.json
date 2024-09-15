@@ -14,7 +14,7 @@
       "sqlite3": "^5.0.0",
       "axios": "^0.21.1",
       "discord.js": "^14.0.0",
-      "express-session": "^1.17.2", 
+      "express-session": "^1.17.2",
       "pm2": "^5.1.0"
     }
   }
