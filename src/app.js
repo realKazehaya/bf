@@ -3,7 +3,7 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
-const { Pool } = require('pg'); // Importa Pool de pg
+const { Pool } = require('pg');
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const withdrawRoutes = require('./routes/withdraw');
@@ -19,7 +19,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false // Cambia esto a true si tienes un certificado válido en producción
+      rejectUnauthorized: false
     }
   },
   logging: false
@@ -29,7 +29,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 const pgPool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false // Cambia esto a true si tienes un certificado válido en producción
+    rejectUnauthorized: false
   }
 });
 
@@ -38,14 +38,19 @@ sequelize.authenticate()
   .then(() => console.log('Conexión a la base de datos establecida correctamente.'))
   .catch(err => console.error('No se pudo conectar a la base de datos:', err));
 
+// Sincronizar modelos con la base de datos
+sequelize.sync({ alter: true })
+  .then(() => console.log('Tablas sincronizadas'))
+  .catch(err => console.error('Error al sincronizar tablas:', err));
+
 // Configuración de EJS
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views')); // Corregido para asegurar que apunta a la carpeta correcta
+app.set('views', path.join(__dirname, '../views'));
 
 // Configuración de sesión con PostgreSQL
 const sessionStore = new pgSession({
-  pool: pgPool, // Usar el pool de conexiones pg
-  tableName: 'session' // Nombre de la tabla para almacenar sesiones
+  pool: pgPool,
+  tableName: 'session'
 });
 
 app.use(session({
@@ -53,7 +58,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'default_secret_key',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' } // Ajustar según sea necesario
+  cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
 // Middleware para procesar el cuerpo de la solicitud
@@ -72,7 +77,7 @@ app.use('/surveys', surveysRoutes);
 
 // Manejo de errores 404
 app.use((req, res, next) => {
-  res.status(404).render('404'); // Asegúrate de tener una vista 404.ejs
+  res.status(404).render('404');
 });
 
 // Iniciar el servidor
