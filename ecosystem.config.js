@@ -4,14 +4,14 @@ module.exports = {
         name: 'app',
         script: './app.js',
         env: {
-          PORT: 10000
+          PORT: 3000
         }
       },
       {
         name: 'bot',
         script: './bot.js',
         env: {
-          PORT: 10000
+          PORT: 3000
         }
       }
     ]
