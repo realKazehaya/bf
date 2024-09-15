@@ -4,6 +4,7 @@
     "main": "app.js",
     "scripts": {
       "start": "node src/app.js",
+      "migrate": "sequelize-cli db:migrate",
       "postinstall": "node src/create-session-table.js"
     },
     "dependencies": {
@@ -14,6 +15,9 @@
       "sequelize": "^6.32.0",
       "express-session": "^1.17.3",
       "connect-pg-simple": "^7.0.0"
+    },
+    "devDependencies": {
+      "sequelize-cli": "^6.2.0"
     }
   }
   
