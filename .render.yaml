@@ -3,4 +3,7 @@ services:
     name: freefire-diamonds-app
     env: node
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: pm2 start ecosystem.config.js --env production
+    plan: free # O el plan que corresponda para tu uso
+    regions:
+      - oregon # Cambia esto según la región que prefieras
