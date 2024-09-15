@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
-const path = require('path');
 const express = require('express');
+const path = require('path');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const { Pool } = require('pg');
@@ -9,6 +9,7 @@ const profileRoutes = require('./routes/profile');
 const withdrawRoutes = require('./routes/withdraw');
 const faqRoutes = require('./routes/faq');
 const surveysRoutes = require('./routes/surveys');
+const User = require('./models/User'); // Importar el modelo User
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,8 +22,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
       require: true,
       rejectUnauthorized: false
     }
-  },
-  logging: false
+  }
 });
 
 // Crear un pool de conexiones pg
@@ -33,13 +33,13 @@ const pgPool = new Pool({
   }
 });
 
-// Verifica la conexión a la base de datos
+// Verificar la conexión a la base de datos
 sequelize.authenticate()
   .then(() => console.log('Conexión a la base de datos establecida correctamente.'))
   .catch(err => console.error('No se pudo conectar a la base de datos:', err));
 
 // Sincronizar modelos con la base de datos
-sequelize.sync({ alter: true })
+sequelize.sync({ force: false }) // Cambia a `true` solo si deseas recrear las tablas
   .then(() => console.log('Tablas sincronizadas'))
   .catch(err => console.error('Error al sincronizar tablas:', err));
 
