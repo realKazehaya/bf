@@ -4,7 +4,7 @@
     "main": "app.js",
     "scripts": {
       "start": "node app.js",
-      "migrate": "node create-session-table.js" 
+      "migrate": "node src/create-session-table.js" 
     },
     "dependencies": {
       "express": "^4.18.2",
