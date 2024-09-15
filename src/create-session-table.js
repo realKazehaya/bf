@@ -1,28 +1,29 @@
-const { Sequelize } = require('sequelize');
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false // Cambia esto a `true` en producción si usas un certificado válido
-    }
+const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
+
+// Crear una instancia del pool de conexiones
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Cambia esto a `true` en producción si usas un certificado válido
   }
 });
 
+// Leer el archivo SQL
+const sqlFilePath = path.join(__dirname, 'create-session-table.sql');
+const sql = fs.readFileSync(sqlFilePath, 'utf8');
+
 const createSessionTable = async () => {
+  const client = await pool.connect();
   try {
-    await sequelize.query(`
-      CREATE TABLE IF NOT EXISTS session (
-        sid VARCHAR NOT NULL PRIMARY KEY,
-        sess JSON NOT NULL,
-        expire TIMESTAMP(6) NOT NULL
-      );
-    `);
+    await client.query(sql);
     console.log('Tabla "session" creada o ya existe.');
   } catch (error) {
     console.error('Error al crear la tabla de sesiones:', error);
   } finally {
-    await sequelize.close();
+    client.release();
+    await pool.end();
   }
 };
 
