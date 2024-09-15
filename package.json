@@ -4,7 +4,6 @@
     "main": "app.js",
     "scripts": {
       "start": "pm2 start ecosystem.config.js --env production",
-      "install": "npm install",
       "build": "echo 'No build step needed' && exit 0"
     },
     "dependencies": {

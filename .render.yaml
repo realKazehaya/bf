@@ -2,9 +2,11 @@ services:
   - type: web
     name: freefire-diamonds-app
     env: node
-    buildCommand: npm install
+    buildCommand: |
+      npm install
+      npm install -g pm2
     startCommand: pm2 start ecosystem.config.js --env production
-    preDeployCommand: ""  # Añade un comando vacío si no necesitas hacer nada antes del deploy
-    plan: free # O el plan que corresponda para tu uso
+    preDeployCommand: ""  # Si no necesitas hacer nada antes del deploy
+    plan: free
     regions:
-      - oregon # Cambia esto según la región que prefieras
+      - oregon
