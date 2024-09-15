@@ -31,7 +31,7 @@ sequelize.authenticate()
 
 // Configuración de EJS
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../views'));
 
 // Configuración de sesión con PostgreSQL
 const sessionStore = new pgSession({
