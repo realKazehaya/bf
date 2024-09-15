@@ -2,7 +2,8 @@ const { Sequelize } = require('sequelize');
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session); // Importar connect-pg-simple
+const pgSession = require('connect-pg-simple')(session);
+const { Pool } = require('pg'); // Importa Pool de pg
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const withdrawRoutes = require('./routes/withdraw');
@@ -24,6 +25,14 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   logging: false
 });
 
+// Crear un pool de conexiones pg
+const pgPool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Cambia esto a true si tienes un certificado válido en producción
+  }
+});
+
 // Verifica la conexión a la base de datos
 sequelize.authenticate()
   .then(() => console.log('Conexión a la base de datos establecida correctamente.'))
@@ -35,7 +44,7 @@ app.set('views', path.join(__dirname, '../views'));
 
 // Configuración de sesión con PostgreSQL
 const sessionStore = new pgSession({
-  pool: sequelize.connectionManager.pool, // Usar la conexión del pool de Sequelize
+  pool: pgPool, // Usar el pool de conexiones pg
   tableName: 'session' // Nombre de la tabla para almacenar sesiones
 });
 
