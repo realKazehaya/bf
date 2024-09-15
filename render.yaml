@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: freefire-app
-    env: node
-    buildCommand: "yarn install && yarn migrate"
-    startCommand: "yarn start"
-    port: 10000

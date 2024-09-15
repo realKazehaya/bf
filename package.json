@@ -1,22 +1,17 @@
 {
-    "name": "freefire-app",
+    "name": "freefire-diamonds-app",
     "version": "1.0.0",
     "main": "app.js",
     "scripts": {
-        "start": "node src/app.js",
-        "migrate": "sequelize-cli db:migrate",
-        "postinstall": "node src/create-session-table.js"
+      "start": "node app.js"
     },
     "dependencies": {
-        "connect-pg-simple": "^7.0.0",
-        "ejs": "^3.1.8",
-        "express": "^4.18.2",
-        "express-session": "^1.17.3",
-        "pg": "^8.7.1",
-        "pg-hstore": "^2.3.4",
-        "sequelize": "^6.32.0"
-    },
-    "devDependencies": {
-        "sequelize-cli": "^6.6.2"
+      "express": "^4.17.1",
+      "ejs": "^3.1.6",
+      "body-parser": "^1.19.0",
+      "sqlite3": "^5.0.0",
+      "axios": "^0.21.1",
+      "discord.js": "^14.0.0"
     }
-}
+  }
+  

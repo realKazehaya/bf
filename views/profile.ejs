@@ -1,18 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <title>Perfil</title>
 </head>
 <body>
-    <h1>Perfil de <%= user.freefire_id %></h1>
-    <p>Diamantes: <%= user.diamonds %></p>
+  <h1>Perfil de <%= user.freefire_id %></h1>
+  <p>Diamantes: <%= user.diamonds %></p>
+  
+  <h2>Historial de retiros</h2>
+  <ul>
+    <% withdraws.forEach(withdraw => { %>
+      <li><%= withdraw.amount %> diamantes - <%= withdraw.status %> - Fecha: <%= withdraw.date %></li>
+    <% }) %>
+  </ul>
 
-    <h2>Historial de retiros</h2>
-    <ul>
-        <!-- Aquí podrías añadir código para mostrar el historial de retiros si lo implementas -->
-    </ul>
+  <a href="/logout">Cerrar Sesión</a>
 </body>
 </html>
