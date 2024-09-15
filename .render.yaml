@@ -4,6 +4,7 @@ services:
     env: node
     buildCommand: npm install
     startCommand: pm2 start ecosystem.config.js --env production
+    preDeployCommand: ""  # Añade un comando vacío si no necesitas hacer nada antes del deploy
     plan: free # O el plan que corresponda para tu uso
     regions:
       - oregon # Cambia esto según la región que prefieras
