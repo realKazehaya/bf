@@ -3,7 +3,9 @@
     "version": "1.0.0",
     "main": "app.js",
     "scripts": {
-      "start": "node app.js"
+      "start": "pm2 start ecosystem.config.js --env production",
+      "migrate": "echo 'No migrations required' && exit 0",
+      "install": "npm install"
     },
     "dependencies": {
       "express": "^4.17.1",
@@ -11,7 +13,9 @@
       "body-parser": "^1.19.0",
       "sqlite3": "^5.0.0",
       "axios": "^0.21.1",
-      "discord.js": "^14.0.0"
+      "discord.js": "^14.0.0",
+      "express-session": "^1.17.2", 
+      "pm2": "^5.1.0"
     }
   }
   
