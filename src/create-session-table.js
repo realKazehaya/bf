@@ -1,29 +1,28 @@
 const { Pool } = require('pg');
-const fs = require('fs');
-const path = require('path');
 
-// Crear una instancia del pool de conexiones
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false // Cambia esto a `true` en producción si usas un certificado válido
-  }
+  user: 'ffd',
+  host: 'dpg-crj2qtm8ii6s73fc2qfg-a', 
+  database: 'ffd',
+  password: 'hiEd0L615EAPNhsvZPNjSjtv8dbd3tHV',
+  port: 5432,
+  ssl: false // Desactiva SSL para la configuración local
 });
 
-// Leer el archivo SQL
-const sqlFilePath = path.join(__dirname, 'create-session-table.sql');
-const sql = fs.readFileSync(sqlFilePath, 'utf8');
-
 const createSessionTable = async () => {
-  const client = await pool.connect();
   try {
-    await client.query(sql);
-    console.log('Tabla "session" creada o ya existe.');
-  } catch (error) {
-    console.error('Error al crear la tabla de sesiones:', error);
-  } finally {
+    const client = await pool.connect();
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS session (
+        sid varchar NOT NULL,
+        sess json NOT NULL,
+        expire timestamp(6) NOT NULL
+      );
+    `);
     client.release();
-    await pool.end();
+    console.log('Session table created');
+  } catch (err) {
+    console.error('Error creating session table:', err);
   }
 };
 
