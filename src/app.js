@@ -80,6 +80,12 @@ app.use((req, res, next) => {
   res.status(404).render('404');
 });
 
+// Manejo de errores generales
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Error en el servidor');
+});
+
 // Iniciar el servidor
 app.listen(port, () => {
   console.log(`Servidor escuchando en el puerto ${port}`);
