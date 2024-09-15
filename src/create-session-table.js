@@ -1,36 +1,29 @@
-const { Client } = require('pg');
-const fs = require('fs');
-const path = require('path');
-
-// Configura la conexión a la base de datos
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    require: true,
-    rejectUnauthorized: false
+const { Sequelize } = require('sequelize');
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false // Cambia esto a `true` en producción si usas un certificado válido
+    }
   }
 });
 
-async function createTable() {
+const createSessionTable = async () => {
   try {
-    // Conectar a la base de datos
-    await client.connect();
-    console.log('Conectado a la base de datos.');
-
-    // Leer el archivo SQL
-    const sql = fs.readFileSync(path.join(__dirname, 'create-session-table.sql'), 'utf8');
-
-    // Ejecutar el comando SQL
-    await client.query(sql);
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS session (
+        sid VARCHAR NOT NULL PRIMARY KEY,
+        sess JSON NOT NULL,
+        expire TIMESTAMP(6) NOT NULL
+      );
+    `);
     console.log('Tabla "session" creada o ya existe.');
-
-  } catch (err) {
-    console.error('Error al crear la tabla:', err);
+  } catch (error) {
+    console.error('Error al crear la tabla de sesiones:', error);
   } finally {
-    // Cerrar la conexión a la base de datos
-    await client.end();
+    await sequelize.close();
   }
-}
+};
 
-// Ejecutar la función
-createTable();
+createSessionTable();
